@@ -1,6 +1,6 @@
 # Bloque 4 · Interfaces
 
-**Diapositivas 9 y 10 · Informe, sección 6 · Criterio 2.1.3 (10 pts).**
+**Diapositivas 11 y 12 · Informe, sección 6 · Criterio 2.1.3 (10 pts).**
 
 ## Qué Dominar
 

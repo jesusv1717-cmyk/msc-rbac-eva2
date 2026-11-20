@@ -1,3 +1,17 @@
+# Integración del 20-11-2026: pull requests #2, #3 y #4
+
+| PR | Autor | Qué entra | Ajustes al integrar |
+| --- | --- | --- | --- |
+| #2 | Sabrina | Sección 7 reescrita sobre el **esquema real** del profesor: cada usuario tiene **un solo perfil vigente**, los perfiles **no tienen versiones** («a todos» cambia la plantilla; «a algunos» crea excepciones) y se **eliminan los procedimientos legados** (las 37 aplicaciones consumen el endpoint). Diagramas nuevos y un escenario por lámina en el bloque 3. | Los wireframes de la ficha, la clonación, la plantilla y Mis permisos se corrigieron para mostrar un solo perfil y sin versiones; también el diagrama de flujo de la clonación. En la presentación: MVP sin «No modificar las 37 aplicaciones», hito 3 «vista personal y migración», lámina de Datos con «un perfil vigente» y cierre con la migración como pendiente. |
+| #4 | Pablo | Nombres por rol en la sección 3 y descarte de *Trunk-Based Development*. | Conflictos con el #2 resueltos. El estándar EST-01 **no se borró**: ahora describe el flujo real (*fork* y *pull request* revisado por otro integrante), así no se rompen las referencias EST-xx. La lámina de roles muestra los nombres. |
+| #3 | bloque 5 | Lámina de Datos con catálogo de aplicaciones y aprobación de excepciones; lámina de Redis con meta < 20 ms y origen de las cifras; **lámina nueva con el video** de Redis. | El video no cargaba por la ruta `/redis-simulador-corto.mp4`: pasó a `src/assets/video/` con ruta relativa, alto limitado y una **portada** para que se vea en el PDF y la PPTX. La lámina de Datos se alineó al modelo del #2. |
+
+La presentación pasa de 16 a 19 láminas (bloque 4 = láminas 11 y 12). La guía de defensa y el guion del bloque 4 se alinearon al modelo nuevo y a la nueva numeración.
+
+**Para revisar en grupo:** la Figura 23 (DER del esquema real) se ve pequeña en el PDF; y la eliminación de los procedimientos legados cambia lo que se dijo en la EVA 1, así que conviene tener clara la respuesta (guía, bloque 3).
+
+---
+
 # Cambios al informe EVA 2: coherencia y redundancias
 
 Archivo: `entregables/Informe-EVA2-G07.pdf` (70 páginas) y `entregables/Informe-EVA2-G07.docx`.

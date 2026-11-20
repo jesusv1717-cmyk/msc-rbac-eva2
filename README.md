@@ -14,8 +14,9 @@ Están en la carpeta [`entregables/`](entregables/):
 | `Presentacion-EVA2-G07.pdf` / `.pptx` | Presentación de la defensa (la PPTX trae las notas del orador) |
 | `Guia-Defensa-EVA2.pdf` | Guía de estudio por bloque, con preguntas probables |
 | `Guion-Bloque4-Interfaces.pdf` | Guion del bloque 4 (interfaces) |
+| `Simulacion-Redis.mp4` | Video de la lámina 15 (en el PDF y la PPTX se ve solo su portada) |
 
-Los cambios más recientes (perfil en vez de cargo, enlace de 15 minutos y sin rol Auditor) están explicados en [`CAMBIOS.md`](CAMBIOS.md).
+Los cambios más recientes (integración de los pull requests #2, #3 y #4, y antes: perfil en vez de cargo, enlace de 15 minutos y sin rol Auditor) están explicados en [`CAMBIOS.md`](CAMBIOS.md).
 
 ## Estructura
 
@@ -78,7 +79,7 @@ Así cada integrante trabaja en su copia y los cambios llegan a la versión ofic
 
 ## Pendiente
 
-- ER nuevo de Sabrina (sección 7 del informe).
-- Decisión de arquitectura entre las opciones de Catalina.
-- Integrar la versión del bloque 5 de Catalina en la presentación.
-- Nombres por rol en las secciones 3 y 9, fechas de EVA 3/EVA 4, línea base (Anexo A) y entrevista a RRHH.
+- Confirmar con el cliente cómo migra cada una de las 37 aplicaciones al endpoint (riesgo R-15).
+- Fechas de los sprints y de la EVA 3 y la EVA 4 (sección 3).
+- Línea base de tiempos (Anexo A) y entrevista a RRHH.
+- Qué guarda hoy `usuario.password_hash` y dónde se guardan los adjuntos de las excepciones (sección 7, brechas).

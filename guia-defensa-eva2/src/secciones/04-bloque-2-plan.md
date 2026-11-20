@@ -8,7 +8,7 @@
 - La prueba de cierre de cada hito.
 - Que hay 28 tareas con responsable, dependencias y sprint, y cuál es la cadena crítica (esquema → cuentas → acceso, y esquema → perfiles → asignación → clonación).
 - La *Definition of Done*: revisado por otro integrante, criterios verificados, pruebas en verde, sin secretos en el código y trazabilidad actualizada.
-- Los 6 roles del equipo, qué estándares verifica cada uno y por qué el frontend tiene dos personas.
+- Los 6 roles del equipo, quién lleva cada uno y qué estándares verifica.
 - Los estándares de Git y de código (EST-01 a EST-06).
 
 ## Frases Clave
@@ -31,8 +31,11 @@ Cuando cumple las cinco condiciones de la *Definition of Done*. La más importan
 **¿Qué estándares de programación aplican?**
 Ramas cortas por tarea, nadie sube directo a la rama principal, revisión obligatoria, mensajes de commit estándar, convenciones de C#, TypeScript y SQL, y un pipeline que bloquea pruebas fallidas y contraseñas escritas en el código.
 
-**¿Por qué dos personas en frontend?**
-Porque con las pantallas nuevas pasamos a ocho. El backend no queda débil, porque Seguridad y Base de Datos también programan del lado del servidor.
+**¿Quién lleva cada rol?**
+Arquitectura y Backend, Sabrina; Frontend y UI/UX, Pablo; Base de Datos y Rendimiento, Abraham; Requerimientos y Trazabilidad, Jesús; Ciberseguridad, Catalina; Scrum, DevOps y QA, José (informe, sección 3).
+
+**¿Cómo trabajan con Git?**
+Cada integrante trabaja en su *fork* y propone sus cambios con un *pull request*; otro integrante lo revisa antes de fusionarlo (EST-01).
 
 **¿Por qué faltan las fechas de los sprints?**
 Porque todavía no tenemos las fechas oficiales de la EVA 3 y la EVA 4. El orden, la duración (dos semanas) y las dependencias ya están definidos.

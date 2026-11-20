@@ -229,7 +229,7 @@ Cada hito tiene una prueba de cierre concreta. En el informe están las 28 tarea
 <div class="card p-3 mt-3 border-t-3 border-brand-navy text-xs">
   <div class="font-bold text-brand-navy-dark mb-2 flex items-center gap-1.5"><div class="i-mdi-source-branch" /> Estándares que aplicamos (Git y código)</div>
   <div class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-ink/85">
-    <div class="flex gap-1.5"><div class="i-mdi-check text-brand-red shrink-0 mt-0.5" />Cada integrante trabaja en su <i>fork</i> y propone cambios con un <i>pull request</i>.</div>
+    <div class="flex gap-1.5"><div class="i-mdi-check text-brand-red shrink-0 mt-0.5" /><span>Cada integrante trabaja en su <i>fork</i> y propone cambios con un <i>pull request</i>.</span></div>
     <div class="flex gap-1.5"><div class="i-mdi-check text-brand-red shrink-0 mt-0.5" />Todo cambio lo revisa <b>otro integrante</b> antes de unirse.</div>
     <div class="flex gap-1.5"><div class="i-mdi-check text-brand-red shrink-0 mt-0.5" />El pipeline bloquea pruebas fallidas y contraseñas escritas en el código.</div>
     <div class="flex gap-1.5"><div class="i-mdi-check text-brand-red shrink-0 mt-0.5" />Mensajes de commit estándar y convenciones de C#, TypeScript y SQL.</div>
@@ -534,7 +534,7 @@ Para que se entienda mejor, preparamos una simulación."
 # <span class="i-mdi-flash-outline align-middle mr-2 text-brand-red" /> Redis en acción
 
 <div class="card p-2 mt-2">
-  <SlidevVideo autoplay="once" controls class="mx-auto rounded-lg" style="max-height: 380px; width: auto">
+  <SlidevVideo autoplay="once" controls poster="./assets/video/redis-simulador-portada.png" class="mx-auto rounded-lg" style="max-height: 380px; width: auto">
     <source src="./assets/video/redis-simulador-corto.mp4" type="video/mp4" />
   </SlidevVideo>
 </div>

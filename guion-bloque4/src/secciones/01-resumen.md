@@ -4,8 +4,8 @@ El bloque 4 presenta el **diseño de interfaces**, que corresponde al criterio 2
 
 | Lámina | Título | Idea central | Tiempo |
 | --- | --- | --- | --- |
-| 9 | Cómo entra una persona al sistema | El flujo de acceso en 5 pasos y cómo resuelve el problema de las contraseñas. | ~1 min 15 s |
-| 10 | Las pantallas que resuelven el problema | Las dos pantallas clave (comparar y clonar, y Mis permisos) y el total de 8 pantallas. | ~1 min 15 s |
+| 11 | Cómo entra una persona al sistema | El flujo de acceso en 5 pasos y cómo resuelve el problema de las contraseñas. | ~1 min 15 s |
+| 12 | Las pantallas que resuelven el problema | Las dos pantallas clave (comparar y clonar, y Mis permisos) y el total de 8 pantallas. | ~1 min 15 s |
 
 Fuente: Elaboración propia (2026).
 

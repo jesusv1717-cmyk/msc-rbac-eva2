@@ -1,6 +1,6 @@
-# Lámina 9 · Cómo Entra una Persona al Sistema
+# Lámina 11 · Cómo Entra una Persona al Sistema
 
-![Lámina 9 de la presentación: flujo de acceso en cinco pasos y wireframe de inicio de sesión](assets/laminas/9.png "Figura 1. Lámina 9 de la presentación de la defensa. Fuente: Elaboración propia (2026).")
+![Lámina 11 de la presentación: flujo de acceso en cinco pasos y wireframe de inicio de sesión](assets/laminas/9.png "Figura 1. Lámina 11 de la presentación de la defensa. Fuente: Elaboración propia (2026).")
 
 ## Lo que Dicen las Notas del PowerPoint
 

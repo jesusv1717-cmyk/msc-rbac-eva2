@@ -3,7 +3,7 @@
 Estas son las preguntas que el profesor puede hacerte sobre el bloque 4. La pauta dice que las preguntas se centran en **decisiones** y en **trazabilidad**. Responde con la estructura: **qué hicimos, por qué y qué requerimiento cubre**.
 
 **¿Qué requerimiento cubre esta pantalla?**
-Usa la tabla de las 8 pantallas de la lámina 10. Por ejemplo: «Comparar y clonar cubre RF-03, con las historias HU02 y HU08, y atiende la necesidad N-02, eliminar la doble ventana».
+Usa la tabla de las 8 pantallas de la lámina 12. Por ejemplo: «Comparar y clonar cubre RF-03, con las historias HU02 y HU08, y atiende la necesidad N-02, eliminar la doble ventana».
 
 **¿Por qué diseñaron primero las pantallas desde las tareas y no desde la base de datos?**
 Porque la pauta y el cliente valoran que el sistema resuelva el trabajo real. Si partiéramos de las tablas, tendríamos pantallas de «mantenedor» como las del sistema actual, y el problema de la doble ventana seguiría existiendo.
@@ -24,7 +24,7 @@ La API rechaza la solicitud con 403 (ERR-09), porque toma la identidad de la ses
 No. Es solo ayuda visual. Si alguien llama directo a la API sin pasar por la pantalla, la API vuelve a verificar el rol y rechaza la operación. La pauta lo menciona como señal de riesgo: «permisos solo visuales».
 
 **¿Qué diferencia hay entre perfil y permiso en estas pantallas?**
-Un permiso es el acceso a una aplicación con una de sus opciones; un perfil es el paquete de permisos de un puesto, como «Operador de muelle». En clonación se copian perfiles, y en Mis permisos cada permiso indica si viene de un perfil o de una excepción.
+Un permiso es el acceso a una aplicación con una de sus opciones; un perfil es el paquete de permisos de un puesto, como «Operador de muelle». Cada persona tiene un solo perfil: en clonación se copia ese perfil, y en Mis permisos cada permiso indica si viene de un perfil o de una excepción.
 
 **¿Qué pasa si dos administradores editan la misma plantilla de perfil?**
 La pantalla avisa que otro administrador la está editando. No la bloquea, pero si los dos guardan, el segundo recibe «otro administrador modificó este registro, recargue» (ERR-05), y así no se pisan los cambios.
