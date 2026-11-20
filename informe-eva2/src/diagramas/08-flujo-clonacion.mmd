@@ -6,9 +6,9 @@ flowchart TD
 
     A(["Operador elige&nbsp;<br/>referencia y destino&nbsp;"]):::navy --> V1{"¿Ambos activos&nbsp;<br/>y distintos?&nbsp;"}:::amber
     V1 -- No --> E1["ERR-02 / ERR-07&nbsp;<br/>no permite continuar&nbsp;"]:::red
-    V1 -- Sí --> B["Muestra perfiles y&nbsp;<br/>diferencia de permisos&nbsp;"]:::navy
-    B --> C["Selecciona perfiles,&nbsp;<br/>ingresa ticket y motivo&nbsp;"]:::navy
-    C --> V2{"¿Ticket, motivo y&nbsp;<br/>al menos un perfil?&nbsp;"}:::amber
+    V1 -- Sí --> B["Muestra el perfil vigente&nbsp;<br/>y la diferencia de permisos&nbsp;"]:::navy
+    B --> C["Confirma el perfil a copiar,&nbsp;<br/>ingresa ticket y motivo&nbsp;"]:::navy
+    C --> V2{"¿Ticket y&nbsp;<br/>motivo?&nbsp;"}:::amber
     V2 -- No --> E2["ERR-03&nbsp;<br/>marca campos faltantes&nbsp;"]:::red
     E2 --> C
     V2 -- Sí --> D["API aplica la clonación&nbsp;<br/>en una transacción&nbsp;"]:::navy

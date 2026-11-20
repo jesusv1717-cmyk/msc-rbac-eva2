@@ -10,21 +10,20 @@
 				<div class="col box"><span class="n">1</span><span class="lbl">Referencia</span><span class="field">mgarcia · María García</span></div>
 				<div class="col box"><span class="lbl">Destino</span><span class="field">lrojas · Luis Rojas</span></div>
 			</div>
-			<h2>Perfiles (lo que se puede clonar)</h2>
+			<h2>Perfil vigente (lo que se clona)</h2>
 			<table>
-				<tr><th style="width:30px"></th><th>Perfil</th><th>Referencia</th><th>Destino</th><th>Resultado</th></tr>
-				<tr><td>☑</td><td>Facturador</td><td>Sí</td><td>No</td><td class="add">+ se agrega</td></tr>
-				<tr><td>—</td><td>Operador de muelle</td><td>Sí</td><td>Sí</td><td>coincide</td></tr>
-				<tr><td>☐</td><td>Supervisor de turno</td><td>No</td><td>Sí</td><td class="del">se quitaría (solo si se marca)</td></tr>
+				<tr><th>Referencia</th><th>Destino hoy</th><th>Destino después de clonar</th></tr>
+				<tr><td>Facturador</td><td>Operador de muelle</td><td class="add">Facturador (reemplaza a Operador de muelle)</td></tr>
 			</table>
 			<h2><span class="n">2</span>Diferencia en permisos efectivos (solo informativa)</h2>
 			<table>
 				<tr><th>Sistema</th><th>Permiso</th><th>Referencia</th><th>Destino después de clonar</th></tr>
 				<tr><td>Facturación Demo</td><td>FACTURADOR</td><td>Perfil</td><td class="add">+ Perfil</td></tr>
+				<tr><td>Operaciones Demo</td><td>OPERADOR</td><td>—</td><td class="del">− se quita (era del perfil anterior)</td></tr>
 				<tr><td>Security.NET</td><td>CONSULTA</td><td><span class="tag dark">EXCEPCIÓN</span></td><td>No se copia · <u>Solicitar como excepción</u></td></tr>
 			</table>
 			<div class="box"><span class="n">3</span><span class="lbl">Ticket</span><span class="field">INC-2290</span> <span class="lbl">Motivo</span><span class="field" style="min-width:330px">Reemplazo en facturación por vacaciones</span></div>
-			<div class="right"><span class="btn">Cancelar</span><span class="btn pri">Clonar 1 perfil</span></div>
+			<div class="right"><span class="btn">Cancelar</span><span class="btn pri">Clonar perfil</span></div>
 		</div>
 	</div>
 </div>
