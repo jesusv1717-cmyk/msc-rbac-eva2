@@ -10,7 +10,9 @@ PENDIENTE: integrante de cada rol (tabla 3.2) y fechas de los sprints 1 a 5, EVA
 
 El equipo mantiene el marco ágil híbrido declarado en la EVA 1: sprints quincenales al estilo Scrum, con planificación al inicio y revisión y retrospectiva al cierre, más un tablero Kanban que limita el trabajo en curso. El tablero vive en GitHub Projects, organizado por hitos; el docente indicó que la cuenta de INACAP también da acceso a Azure DevOps, que se mantiene como alternativa equivalente.
 
-El código se integra con *Trunk-Based Development*: ramas de vida corta por tarea (por ejemplo, `feat/HU08-clonacion`) que se fusionan a la rama principal mediante un *pull request* aprobado por un integrante distinto del autor. El docente actúa como *Product Owner* y contraparte de MSC Chile, y cada revisión de sprint se usa para validar con él los criterios de aceptación.
+El código se integra con *pull requests*: cada integrante trabaja en su *fork* y otro integrante revisa el cambio antes de fusionarlo en la rama principal (EST-01).
+
+El docente actúa como *Product Owner* y contraparte de MSC Chile, y cada revisión de sprint se usa para validar con él los criterios de aceptación.
 
 ## Roles del Equipo
 
@@ -18,11 +20,11 @@ El docente aclaró que los «roles y perfiles» de la EVA 2 se refieren a los in
 
 | Rol | Integrante | Responsabilidad |
 | --- | --- | --- |
-| Arquitectura y Backend Lead | [Confirmar] | Arquitectura 4+1, contratos de la API y lógica de negocio en .NET 10. |
-| Frontend Lead y UI/UX | [Confirmar] | Flujos, wireframes y SPA en React optimizada para Edge en Citrix. |
-| Base de Datos y Rendimiento | [Confirmar] | Modelo relacional, concurrencia, Redis y prueba de carga. |
-| Requerimientos y Análisis Funcional | [Confirmar] | Backlog, reglas de negocio, línea base, entrevistas y trazabilidad. |
-| Ciberseguridad y Auditoría | [Confirmar] | Autenticación, contraseñas, roles del portal, bitácora y estándares seguros. |
+| Arquitectura y Backend Lead | Sabrina Silva | Arquitectura 4+1, contratos de la API y lógica de negocio en .NET 10. |
+| Frontend Lead y UI/UX | Pablo Herrera | Flujos, wireframes y SPA en React optimizada para Edge en Citrix. |
+| Base de Datos y Rendimiento | Abraham Tapia | Modelo relacional, concurrencia, Redis y prueba de carga. |
+| Requerimientos y Análisis Funcional | Jesús Rincón | Backlog, reglas de negocio, línea base, entrevistas y trazabilidad. |
+| Ciberseguridad y Auditoría | Catalina Cubillos | Autenticación, contraseñas, roles del portal, bitácora y estándares seguros. |
 | Scrum Master, DevOps y QA Lead | José Morales | Ceremonias, repositorio, pipeline, ambiente local, datos sintéticos y plan de pruebas. |
 
 Fuente: Elaboración propia a partir de la sección 5.2 del informe de la EVA 1 (2026).

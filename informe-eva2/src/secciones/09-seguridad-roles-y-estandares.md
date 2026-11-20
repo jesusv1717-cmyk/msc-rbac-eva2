@@ -43,7 +43,7 @@ El docente indicó que los estándares de la EVA 2 incluyen el flujo de Git y la
 
 | ID | Estándar | Cómo se verifica |
 | --- | --- | --- |
-| EST-01 | **Flujo de Git:** *Trunk-Based Development*; ramas de vida corta con nombre `tipo/HUxx-descripcion` (por ejemplo, `feat/HU08-clonacion`); prohibido el *push* directo a `main`; fusión por *squash* tras aprobación y pipeline en verde. | Reglas de protección de la rama principal en GitHub. |
+| EST-01 | **Flujo de Git:** cada integrante trabaja en su *fork* del repositorio del equipo y propone sus cambios con un *pull request* hacia la rama principal; un integrante distinto del autor lo revisa antes de fusionarlo. | Revisión del *pull request* en GitHub. |
 | EST-02 | **Commits y pull requests:** mensajes con *Conventional Commits* (`feat:`, `fix:`, `test:`…); cada *pull request* cita su historia (HUxx) y sus casos de prueba (CP-xx), y completa una lista de verificación de seguridad. | Plantilla de *pull request* y revisión. |
 | EST-03 | **Convenciones de C#:** guía oficial de .NET (PascalCase, sufijo `Async`, tipos nulos explícitos), una operación por carpeta según REPR. | `.editorconfig` y `dotnet format` en el pipeline. |
 | EST-04 | **Convenciones de TypeScript:** modo estricto, componentes funcionales, sin `any`. | ESLint y Prettier en el pipeline. |
