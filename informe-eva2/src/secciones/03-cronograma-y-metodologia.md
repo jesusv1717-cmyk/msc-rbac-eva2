@@ -20,7 +20,7 @@ El docente aclaró que los «roles y perfiles» de la EVA 2 se refieren a los in
 | --- | --- | --- |
 | Arquitectura y Backend Lead | [Confirmar] | Arquitectura 4+1, contratos de la API y lógica de negocio en .NET 10. |
 | Frontend Lead y UI/UX | [Confirmar] | Flujos, wireframes y SPA en React optimizada para Edge en Citrix. |
-| Base de Datos y Rendimiento | [Confirmar] | Modelo relacional, concurrencia, procedimientos fachada, Redis y prueba de carga. |
+| Base de Datos y Rendimiento | [Confirmar] | Modelo relacional, concurrencia, Redis y prueba de carga. |
 | Requerimientos y Análisis Funcional | [Confirmar] | Backlog, reglas de negocio, línea base, entrevistas y trazabilidad. |
 | Ciberseguridad y Auditoría | [Confirmar] | Autenticación, contraseñas, roles del portal, bitácora y estándares seguros. |
 | Scrum Master, DevOps y QA Lead | José Morales | Ceremonias, repositorio, pipeline, ambiente local, datos sintéticos y plan de pruebas. |
@@ -35,7 +35,7 @@ Siguiendo la indicación del docente, cada hito agrupa los requerimientos funcio
 | --- | --- | --- | --- | --- |
 | **H1. Acceso y cuentas** | RF-13, RF-15, RF-16, RF-17, RF-12 | HU13, HU15, HU16, HU17, HU18, HU12 | Solicitar acceso, aprobarlo con otro administrador, definir la contraseña con el enlace, ingresar y comprobar que un enlace vencido no sirve; simular que AD deja de traer a un usuario y que se desactiva solo. | 1 |
 | **H2. Permisos y perfiles** | RF-01, RF-02, RF-03, RF-04, RF-11, RF-09 | HU07, HU01, HU02, HU08, HU03, HU09, HU10 | Aplicar un cambio de perfil solo a algunos usuarios y verificar que los demás no cambiaron; modificar el mismo usuario desde dos servidores y verificar el rechazo controlado. | 2 |
-| **H3. Vista personal y compatibilidad** | RF-14, RF-05, RF-08 | HU14, HU05 | Entrar como colaborador y ver solo lo propio; comparar que los procedimientos fachada devuelven exactamente lo mismo que los legados. | 3 |
+| **H3. Vista personal y migración** | RF-14, RF-05, RF-08 | HU14, HU05 | Entrar como colaborador y ver solo lo propio; comparar que el endpoint entrega exactamente los mismos permisos que el modelo legado. | 3 |
 | **H4. Registro, seguridad y rendimiento** | RF-06, RNF-01, RNF-04 | HU04 | Intentar borrar un registro de la bitácora y llamar a la API sin permiso; prueba de carga con 600 consumidores concurrentes. | 3 |
 
 Fuente: Elaboración propia a partir del tablero del equipo (2026).
@@ -60,7 +60,7 @@ Las tareas se derivan de los hitos. El número entre paréntesis corresponde al 
 | T-12 | Enlaces de un solo uso: activación, reenvío, cambio y recuperación (#6, #7, #9, #10) | H1 | Backend y Ciberseguridad | T-10 | 1 |
 | T-13 | Sincronización con AD cada 10 minutos, freno de seguridad y resumen diario (#11, #12, #15 a #19) | H1 | Backend y Base de Datos | T-09 | 1 |
 | T-14 | Pruebas del hito 1 (#14, #20) | H1 | QA | T-11 a T-13 | 1 |
-| T-15 | Perfiles con plantillas versionadas y aplicación a todos o a algunos (#21, #23, #24) | H2 | Backend y Frontend | T-09 | 2 |
+| T-15 | Perfiles con aplicación de cambios a todos o a algunos colaboradores (#21, #23, #24) | H2 | Backend y Frontend | T-09 | 2 |
 | T-16 | Asignación, cambio de perfil y baja (#22) | H2 | Backend | T-15 | 2 |
 | T-17 | Concurrencia: bloqueo de fila, rechazo controlado y aviso de edición (#25, #26) | H2 | Base de Datos y Backend | T-15 | 2 |
 | T-18 | Comparar y clonar (#27 a #29) | H2 | Frontend y Backend | T-16 | 2 |
@@ -68,7 +68,7 @@ Las tareas se derivan de los hitos. El número entre paréntesis corresponde al 
 | T-20 | Pruebas del hito 2 (#33) | H2 | QA | T-15 a T-19 | 2 |
 | T-21 | Mis permisos y cambio de contraseña (#34 a #37) | H3 | Frontend | T-12, T-16 | 3 |
 | T-22 | Endpoint, caché Redis con versión y modo degradado (#39, #44, #45) | H3 | Base de Datos y Backend | T-16 | 3 |
-| T-23 | Procedimientos fachada y prueba de regresión (#40, #41) | H3 | Base de Datos | T-16 | 3 |
+| T-23 | Prueba de regresión de migración: comparar la tabla legada con el endpoint (#40, #41) | H3 | Base de Datos | T-22 | 3 |
 | T-24 | Consulta de la bitácora y autorización en el servidor de todos los endpoints (#47, #50, #51) | H4 | Frontend y Ciberseguridad | T-09 | 3 |
 | T-25 | Prueba de carga y pruebas de los hitos 3 y 4 (#42, #43, #46, #53) | H3, H4 | QA y Base de Datos | T-22, T-24 | 3 |
 | T-26 | Catálogo de aplicaciones (#38) | EVA 4 | Frontend | T-25 | 4 |

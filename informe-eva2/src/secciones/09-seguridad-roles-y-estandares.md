@@ -47,7 +47,7 @@ El docente indicó que los estándares de la EVA 2 incluyen el flujo de Git y la
 | EST-02 | **Commits y pull requests:** mensajes con *Conventional Commits* (`feat:`, `fix:`, `test:`…); cada *pull request* cita su historia (HUxx) y sus casos de prueba (CP-xx), y completa una lista de verificación de seguridad. | Plantilla de *pull request* y revisión. |
 | EST-03 | **Convenciones de C#:** guía oficial de .NET (PascalCase, sufijo `Async`, tipos nulos explícitos), una operación por carpeta según REPR. | `.editorconfig` y `dotnet format` en el pipeline. |
 | EST-04 | **Convenciones de TypeScript:** modo estricto, componentes funcionales, sin `any`. | ESLint y Prettier en el pipeline. |
-| EST-05 | **Convenciones de base de datos:** tablas nuevas en el esquema `rbac`, en español y en minúsculas; toda modificación del esquema mediante una migración versionada, nunca a mano. | Revisión y ejecución de migraciones en el pipeline. |
+| EST-05 | **Convenciones de base de datos:** tablas y columnas nuevas sobre el esquema de origen, en español y en minúsculas, sin prefijos (sección 7); toda modificación del esquema mediante una migración versionada, nunca a mano. | Revisión y ejecución de migraciones en el pipeline. |
 | EST-06 | **Pruebas:** toda historia agrega o actualiza sus pruebas; el pipeline no permite fusionar con pruebas fallidas. | Pipeline. |
 
 Fuente: Elaboración propia (2026).

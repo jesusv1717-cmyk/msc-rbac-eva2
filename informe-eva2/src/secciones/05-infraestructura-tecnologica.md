@@ -14,7 +14,7 @@ Esta sección indica dónde se ejecuta cada componente, dónde se guardan los da
 | Portal (SPA) | Archivos estáticos servidos por la API; se ejecuta en Microsoft Edge dentro de Citrix Workspace. | Servidor de desarrollo de Vite. |
 | Balanceo de carga | Servidor IIS con *Application Request Routing* (ARR), que reparte las solicitudes y termina TLS. | Un proxy inverso local delante de dos instancias de la API, para probar la concurrencia entre servidores. |
 | API RBAC (.NET 10) | Dos o más servidores Windows con IIS, mediante el módulo de ASP.NET Core. | Dos instancias en el equipo de desarrollo. |
-| SQL Server | Instancia corporativa existente (unos 300 GB de RAM, según el cliente); esquema `rbac` en la base que usan los satélites. | Contenedor de SQL Server 2022 con el esquema, los procedimientos fachada y datos sintéticos. |
+| SQL Server | Instancia corporativa existente (unos 300 GB de RAM, según el cliente); el esquema de origen (sección 7), en la misma base que usan los satélites. | Contenedor de SQL Server 2022 con el esquema y datos sintéticos. |
 | Redis | Instancia corporativa existente. | Contenedor de Redis. |
 | Directorio corporativo | API de usuarios activos de AD. El docente ofreció levantar una versión de prueba. | API simulada con la lista de usuarios sintéticos. |
 | Correo | Servidor SMTP corporativo con TLS. | Servidor de correo de prueba en contenedor, que captura los mensajes sin enviarlos. |
@@ -27,13 +27,13 @@ Los contenedores se usan solo en desarrollo y pruebas: permiten levantar el mism
 
 | Dato | Dónde se guarda | Durabilidad y respaldo |
 | --- | --- | --- |
-| Modelo RBAC (perfiles, colaboradores, asignaciones, excepciones) | SQL Server, esquema `rbac` | Fuente de verdad. Respaldo según la política corporativa. |
-| Cuentas del portal (usuario, *hash* de contraseña, rol, estado, intentos fallidos) | SQL Server, tablas de ASP.NET Core Identity en el esquema `rbac` | Igual que el modelo RBAC. Nunca se guarda una contraseña, solo su *hash*. |
-| Enlaces de un solo uso | SQL Server | Solo se guarda el *hash* del enlace, con su vencimiento. |
+| Modelo del esquema de origen (`sistema`, `perfil`, `transaccion`, `usuario`, `permiso_adiciona`) | SQL Server, esquema del sistema MSC.Security (sección 7) | Fuente de verdad. Respaldo según la política corporativa. |
+| Credenciales de `usuario` (*hash* de contraseña, rol, estado, intentos fallidos, bloqueo) | SQL Server, tabla `usuario`; PBKDF2 vía ASP.NET Core Identity | Igual que el resto del esquema. Nunca se guarda una contraseña, solo su *hash*. |
+| Enlaces de un solo uso | SQL Server, tabla `link_activacion` | Solo se guarda el *hash* del enlace, con su vencimiento. |
 | Claves de protección de sesión | SQL Server | Compartidas por todos los servidores IIS (decisión D-11). |
-| Proyección de permisos efectivos | SQL Server, `tb_permiso_efectivo` | Se puede reconstruir desde el modelo RBAC. |
-| Bitácora de auditoría | SQL Server, tabla *append-only* | Respaldo completo diario y del registro de transacciones cada 15 minutos (propuesta). |
-| Documentos de respaldo de la auditoría | SQL Server, tabla de adjuntos | Tamaño máximo por archivo; su huella SHA-256 queda en el evento. |
+| Proyección de permisos efectivos | SQL Server, tabla `permiso_efectivo` (agregada por el diseño, sección 7) | Se puede reconstruir desde `perfil_sistema_transaccion` y `permiso_adiciona`. |
+| Bitácora de auditoría | SQL Server, tabla `auditoria` (*append-only*) | Respaldo completo diario y del registro de transacciones cada 15 minutos (propuesta). |
+| Documentos de respaldo de excepciones | Pendiente de definir | El esquema de origen no trae una tabla de adjuntos; queda como brecha a confirmar con el cliente (sección 7). |
 | Caché de permisos | Redis | Volátil: se reconstruye desde la proyección. |
 
 Fuente: Elaboración propia (2026).
@@ -49,7 +49,7 @@ En el ambiente de pruebas se usan solo datos sintéticos. Como referencia del co
 | Directorio corporativo (AD) | Fuente de las identidades (nombre, correo, departamento y estado). Se consulta su lista de activos cada 10 minutos. **No autentica el portal.** | Es el origen de las identidades en el legado y en el proceso actual del cliente. |
 | Servidor de correo (SMTP) | Envío de enlaces de activación, cambio y recuperación de contraseña, y del resumen diario de bajas. | Es el canal corporativo verificado de cada colaborador. |
 | Redis | Caché de permisos efectivos. | Permite cumplir RNF-01 sin sobrecargar SQL Server; ya existe en la infraestructura del cliente. |
-| SQL Server corporativo | Fuente de verdad y procedimientos fachada. | Restricción del cliente: stack corporativo y firmas legadas intactas. |
+| SQL Server corporativo | Fuente de verdad del modelo RBAC. | Restricción del cliente: stack corporativo ya operado por MSC Chile. |
 | Citrix Workspace y Edge | Entorno donde trabaja el personal. | No se modifica; la SPA se diseña para ese entorno (RNF-06). |
 | Sistema de tickets de TI | Solo se guarda el identificador del ticket en cada operación. | Integrarse con él no está en el alcance. |
 
@@ -97,7 +97,6 @@ La EVA 1 prometió *zero downtime* sin una meta medible (CAL-05). Este diseño l
 
 | Servicio | Disponibilidad objetivo | RTO | RPO |
 | --- | --- | --- | --- |
-| Resolución de permisos por procedimientos fachada | La misma de SQL Server hoy: el proyecto no puede reducirla | Igual al actual | Igual al actual |
 | Endpoint REST de permisos | 99,9 % mensual, 24/7 | 15 minutos | 0: la API no guarda estado propio |
 | Portal (administración y vista personal) | 99,5 % en horario hábil | 4 horas | 0: los datos están en SQL Server |
 | Bitácora de auditoría | Igual a SQL Server | 4 horas | 15 minutos |
@@ -110,7 +109,7 @@ El RTO es el tiempo máximo aceptable para recuperar el servicio después de una
 | --- | --- | --- |
 | Redis no responde | Aumenta la latencia del endpoint. | Se lee desde la proyección y se emite una alerta. Objetivo degradado: P95 bajo 100 ms, a medir en la EVA 3. |
 | Cae un servidor IIS | Ninguno visible. | ARR deja de enviarle tráfico; las sesiones siguen válidas en los demás servidores (D-11). |
-| Caen todos los servidores IIS | El portal y el endpoint no están disponibles. | Los satélites con procedimientos fachada siguen funcionando. Nadie gana ni pierde permisos. |
+| Caen todos los servidores IIS | El portal, el endpoint y la consulta de permisos de las satélites no están disponibles hasta que un servidor IIS vuelva. | Nadie gana ni pierde permisos; al volver un servidor, ARR retoma el tráfico sin intervención. |
 | La API de AD no responde o entrega una lista anómala | No se detectan altas ni bajas nuevas. | La sincronización no desactiva a nadie y avisa a TI; reintenta en la siguiente ejecución. |
 | El servidor de correo no responde | Los enlaces no llegan. | Los envíos se reintentan; el administrador ve el estado del envío y puede reenviar. |
 | SQL Server no responde | Todo el sistema se detiene, igual que hoy. | Se cubre con la alta disponibilidad corporativa de SQL Server, que está fuera del alcance. |
@@ -121,4 +120,3 @@ Finalmente, «sin interrupción» se define de forma medible para los despliegue
 
 - **Actualización de la API:** se actualiza un servidor IIS a la vez, retirándolo antes del balanceo, de modo que siempre hay al menos uno atendiendo.
 - **Cambios en la base de datos:** las migraciones son compatibles hacia atrás. Primero se agregan las estructuras nuevas, y las antiguas se retiran solo cuando ninguna versión en ejecución las usa.
-- **Procedimientos fachada:** cada uno pasa la prueba de regresión antes de reemplazar al legado, con **cero diferencias** como criterio de aceptación.

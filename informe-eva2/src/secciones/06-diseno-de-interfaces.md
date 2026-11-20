@@ -28,21 +28,21 @@ La siguiente tabla define, para cada tarea, el flujo entrada → acción → val
 | Recuperar contraseña (HU18 · RF-17) | Usuario o correo | Enviar enlace | Ninguna visible: la respuesta es la misma exista o no la cuenta | Si la cuenta existe, se envía un enlace | — |
 | Ver mis permisos (HU14 · RF-14) | Sesión de colaborador | Abrir la vista | Solo se consultan los datos propios | Lista de aplicaciones, permisos y su origen | ERR-09 |
 | Asignar o cambiar perfil (HU01 · RF-02) | Colaborador y perfil | Asignar | Perfil vigente; colaborador activo; no es el propio administrador | Permisos recalculados y evento registrado | ERR-02, ERR-06, ERR-09 |
-| Comparar y clonar (HU02, HU08 · RF-03) | Referencia, destino, perfiles, ticket y motivo | Clonar | Usuarios distintos y activos; ticket y motivo; al menos un perfil | Perfiles copiados y evento `CLONACION` | ERR-02, ERR-03, ERR-05, ERR-07 |
+| Comparar y clonar (HU02, HU08 · RF-03) | Referencia, destino, ticket y motivo | Clonar | Usuarios distintos y activos; ticket y motivo | Perfil copiado y evento `CAMBIO_PERFIL` | ERR-02, ERR-03, ERR-05, ERR-07 |
 | Solicitar una excepción (HU03 · RF-04) | Colaborador, permiso, tipo, vigencia, ticket, justificación y adjunto | Enviar a aprobación | Vigencia válida; sin conflicto con otra excepción; adjunto permitido | Excepción `PENDIENTE`, todavía sin efecto | ERR-03, ERR-10, ERR-11 |
 | Aprobar una excepción (HU09 · RF-11) | Solicitud pendiente | Aprobar o rechazar | El aprobador no es el solicitante; motivo si rechaza | Excepción aplicada o rechazada | ERR-04 |
 | Dar de baja (HU10 · RF-09) | Colaborador, ticket y motivo | Confirmar baja | Ticket y motivo; confirmación explícita | Cuenta desactivada y permisos efectivos vacíos | ERR-03, ERR-05 |
-| Modificar plantilla de perfil (HU07 · RF-01) | Permisos, colaboradores a los que se aplica, ticket y justificación | Aplicar | Versión del perfil sin cambios desde la lectura; al menos un colaborador si es selección parcial | Nueva versión del perfil aplicada en una transacción | ERR-03, ERR-05 |
+| Modificar plantilla de perfil (HU07 · RF-01) | Permisos a agregar o quitar, alcance (todos o colaboradores seleccionados), ticket y justificación | Aplicar | `rowversion` del perfil sin cambios desde la lectura; al menos un colaborador si el alcance es «algunos» | «Todos»: cambia la plantilla, con registro de cada afectado. «Algunos»: crea una excepción por cada colaborador elegido, sin tocar la plantilla. Ambas en una transacción | ERR-03, ERR-05 |
 | Consultar la bitácora (HU04 · RF-06) | Fechas, afectado, operador y aplicación | Filtrar y ver detalle | Rango de fechas válido | Lista paginada y detalle de solo lectura | ERR-08 |
 | Mantener aplicaciones (HU19 · RF-18) | Nombre, sigla y estado | Crear, editar o dar de baja | Sigla única; no se da de baja si tiene permisos vigentes | Catálogo actualizado | ERR-06 |
-| Mantener departamentos (HU06 · RF-07) | Nombre | Crear, editar o desactivar | Nombre único; sin perfiles vigentes para desactivar | Catálogo actualizado | ERR-06 |
+| Mantener departamentos (HU06 · RF-07) | Nombre | Crear, editar o desactivar | Nombre único; sin usuarios activos asignados para desactivar | Catálogo actualizado | ERR-06 |
 | Recertificar accesos (HU11 · RF-10) | Campaña abierta | Confirmar o revocar | Campaña abierta; todos los accesos resueltos antes de cerrar | Revocaciones aplicadas y evidencia | ERR-05 |
 
 Fuente: Elaboración propia (2026).
 
-La clonación es la tarea más importante para TI, porque elimina la «doble ventana» (N-02). La Figura 7 detalla su flujo con los puntos de validación y los caminos de error:
+La clonación es la tarea más importante para TI, porque elimina la «doble ventana» (N-02). La Figura 14 detalla su flujo con los puntos de validación y los caminos de error:
 
-![Diagrama de flujo de la clonación con validaciones y errores](assets/diagramas/08-flujo-clonacion.png "Figura 7. Flujo de la tarea de comparación y clonación. Fuente: Elaboración propia (2026)."){.img-h14}
+![Diagrama de flujo de la clonación con validaciones y errores](assets/diagramas/08-flujo-clonacion.png "Figura 14. Flujo de la tarea de comparación y clonación. Fuente: Elaboración propia (2026)."){.img-h14}
 
 ## Wireframes
 
@@ -50,49 +50,49 @@ Se presentan ocho pantallas: tres de acceso y vista personal, y cinco de adminis
 
 **Inicio de sesión y definición de contraseña (HU13, HU15, HU17 · RF-13, RF-15, RF-16).** Es la entrada única al portal.
 
-![Wireframe de inicio de sesión y definición de contraseña](assets/wireframes/w00-login.png "Figura 8. Wireframe de inicio de sesión, solicitud de acceso y definición de contraseña. Fuente: Elaboración propia (2026).")
+![Wireframe de inicio de sesión y definición de contraseña](assets/wireframes/w00-login.png "Figura 15. Wireframe de inicio de sesión, solicitud de acceso y definición de contraseña. Fuente: Elaboración propia (2026).")
 
 ① El mensaje de error no indica si falló el usuario o la contraseña, y la cuenta se bloquea tras 5 intentos. ② Quien aún no tiene cuenta puede solicitarla, siempre que su identidad exista en el directorio. ③ La contraseña se define desde el enlace del correo; si el enlace venció o ya se usó, se puede pedir uno nuevo sin una nueva aprobación.
 
 **Mis permisos (HU14 · RF-14).** Es la vista que pidió el cliente: cada colaborador ve sus aplicaciones y permisos.
 
-![Wireframe de la vista personal de permisos](assets/wireframes/w06-mis-permisos.png "Figura 9. Wireframe de la vista «Mis permisos» del colaborador. Fuente: Elaboración propia (2026).")
+![Wireframe de la vista personal de permisos](assets/wireframes/w06-mis-permisos.png "Figura 16. Wireframe de la vista «Mis permisos» del colaborador. Fuente: Elaboración propia (2026).")
 
 ① Cada permiso muestra su origen: un perfil o una excepción con su ticket y vencimiento. ② La pantalla es solo de lectura, y la API rechaza cualquier consulta a datos de otra persona. ③ El cambio de contraseña usa el mismo mecanismo de enlace: la pantalla nunca pide ni muestra contraseñas.
 
 **Solicitudes de acceso (HU16 · RF-15).** Concentra en un paso la aprobación, la asignación del perfil inicial y el envío del enlace.
 
-![Wireframe de solicitudes de acceso pendientes](assets/wireframes/w07-solicitudes-acceso.png "Figura 10. Wireframe de aprobación de solicitudes de acceso. Fuente: Elaboración propia (2026).")
+![Wireframe de solicitudes de acceso pendientes](assets/wireframes/w07-solicitudes-acceso.png "Figura 17. Wireframe de aprobación de solicitudes de acceso. Fuente: Elaboración propia (2026).")
 
 ① Al aprobar se elige el perfil inicial y se exige un ticket. ② La pantalla explica qué ocurrirá, incluido que TI nunca conocerá la contraseña. ③ Quien creó una solicitud no puede aprobarla.
 
 **Ficha del colaborador (HU01, HU10 · RF-02, RF-09).** Es la pantalla de trabajo diario de TI. Los colaboradores llegan solos desde el directorio, por lo que aquí no hay una acción de alta.
 
-![Wireframe de la ficha del colaborador](assets/wireframes/w01-colaborador.png "Figura 11. Wireframe de la ficha del colaborador. Fuente: Elaboración propia (2026).")
+![Wireframe de la ficha del colaborador](assets/wireframes/w01-colaborador.png "Figura 18. Wireframe de la ficha del colaborador. Fuente: Elaboración propia (2026).")
 
 ① Muestra por separado el estado de la identidad en el directorio y el de la cuenta en el portal. ② Asignar o cambiar un perfil recalcula los permisos efectivos. ③ La baja muestra antes de confirmar exactamente qué se revocará, y exige ticket y motivo.
 
-**Comparar y clonar (HU02, HU08 · RF-03).** Reemplaza la doble ventana por una sola vista. La acción opera sobre **perfiles**, según la definición de clonación de la sección 7.
+**Comparar y clonar (HU02, HU08 · RF-03).** Reemplaza la doble ventana por una sola vista. La acción opera sobre el **perfil**, según la definición de clonación de la sección 7.
 
-![Wireframe de la pantalla de comparación y clonación](assets/wireframes/w02-clonacion.png "Figura 12. Wireframe de comparación y clonación. Fuente: Elaboración propia (2026).")
+![Wireframe de la pantalla de comparación y clonación](assets/wireframes/w02-clonacion.png "Figura 19. Wireframe de comparación y clonación. Fuente: Elaboración propia (2026).")
 
 ① Referencia y destino deben ser colaboradores activos y distintos. ② Las excepciones de la referencia no se copian; la pantalla ofrece solicitarlas como excepciones nuevas. ③ Ticket y motivo son obligatorios.
 
 **Excepciones y aprobación (HU03, HU09 · RF-04, RF-11).** Separa la solicitud de la aprobación entre dos administradores distintos.
 
-![Wireframe de la pantalla de excepciones y aprobación](assets/wireframes/w03-excepciones.png "Figura 13. Wireframe de solicitud y aprobación de excepciones. Fuente: Elaboración propia (2026).")
+![Wireframe de la pantalla de excepciones y aprobación](assets/wireframes/w03-excepciones.png "Figura 20. Wireframe de solicitud y aprobación de excepciones. Fuente: Elaboración propia (2026).")
 
 ① La solicitud exige tipo, vigencia con fecha de término, ticket y justificación; el adjunto no puede superar 5 MB. ② El aprobador ve el detalle completo antes de decidir. ③ Intentar aprobar una solicitud propia muestra el error de separación de funciones.
 
-**Plantilla de perfil (HU07 · RF-01).** Implementa la regla de propagación acordada con el cliente: el administrador decide a quién se aplica el cambio.
+**Plantilla de perfil (HU07 · RF-01).** El esquema de origen no versiona los perfiles, pero el administrador conserva la elección que pidió el cliente: aplicar el cambio a todos los colaboradores del perfil o solo a los que seleccione (sección 7).
 
-![Wireframe de la plantilla de perfil con selección de colaboradores](assets/wireframes/w04-plantilla-perfil.png "Figura 14. Wireframe de la plantilla de perfil con aplicación a todos o a algunos. Fuente: Elaboración propia (2026).")
+![Wireframe de la plantilla de perfil con selección de colaboradores](assets/wireframes/w04-plantilla-perfil.png "Figura 21. Wireframe de la plantilla de perfil con aplicación a todos o a algunos. Fuente: Elaboración propia (2026).")
 
-① Los permisos agregados y quitados se distinguen visualmente. ② El administrador aplica la nueva versión a todos o solo a los seleccionados, y ve el efecto sobre cada uno; los no seleccionados siguen en la versión anterior. ③ Si otro administrador está editando el mismo perfil, la pantalla lo avisa; no lo bloquea, pero el segundo guardado se rechaza.
+① Los permisos agregados y quitados se distinguen visualmente. ② El administrador elige el alcance: **a todos** cambia la plantilla del perfil (afecta también a quien lo reciba después); **a algunos** no toca la plantilla y crea una excepción por cada colaborador seleccionado. ③ Si otro administrador está editando el mismo perfil, la pantalla lo avisa; no lo bloquea, pero el segundo guardado se rechaza.
 
 **Bitácora de auditoría (HU04 · RF-06).** Permite reconstruir quién hizo qué, cuándo y con qué respaldo. Es de solo lectura y forma parte del menú del Administrador TI.
 
-![Wireframe de la bitácora de auditoría](assets/wireframes/w05-auditoria.png "Figura 15. Wireframe de consulta de la bitácora de auditoría. Fuente: Elaboración propia (2026).")
+![Wireframe de la bitácora de auditoría](assets/wireframes/w05-auditoria.png "Figura 22. Wireframe de consulta de la bitácora de auditoría. Fuente: Elaboración propia (2026).")
 
 ① Los filtros corresponden al criterio de aceptación de HU04. ② El detalle muestra el estado anterior y posterior, y recuerda que una corrección se registra como anulación. ③ Si no hay resultados, se informa y se sugiere ampliar el rango.
 

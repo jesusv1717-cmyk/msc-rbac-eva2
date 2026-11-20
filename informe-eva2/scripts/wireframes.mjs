@@ -33,9 +33,7 @@ try {
 	});
 	for (const name of names) {
 		const body = await readFile(resolve(SOURCE, name), 'utf8');
-		await page.setContent(
-			`<style>${fonts.join('')}${base}</style>${body}`,
-		);
+		await page.setContent(`<style>${fonts.join('')}${base}</style>${body}`);
 		await page.evaluate(() => document.fonts.ready);
 		await page.locator('.wf').screenshot({
 			path: resolve(TARGET, `${basename(name, '.html')}.png`),

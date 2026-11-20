@@ -105,7 +105,11 @@ export async function renderDiagrams(tokens) {
 				globalThis.mermaid.initialize({
 					startOnLoad: false,
 					theme: 'base',
-					flowchart: { nodeSpacing: 45, rankSpacing: 60, padding: 12 },
+					flowchart: {
+						nodeSpacing: 45,
+						rankSpacing: 60,
+						padding: 12,
+					},
 					sequence: {
 						actorMargin: 90,
 						messageMargin: 42,
@@ -121,43 +125,59 @@ export async function renderDiagrams(tokens) {
 		);
 		for (const name of stale) {
 			const code = await readFile(resolve(DIAGRAMS, name), 'utf8');
-			await page.evaluate(async ({ haloCss, source }) => {
-				const { svg } = await globalThis.mermaid.render(
-					'diagram',
-					source,
-				);
-				const box = document.querySelector('#box');
-				box.innerHTML = svg;
-				// Halo behind labels, injected last so it wins over Mermaid's own rules.
-				const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-				style.textContent = haloCss;
-				box.querySelector('svg').append(style);
-				// Lifelines are drawn after the messages: send them to the back so text stays on top.
-				const root = box.querySelector('svg');
-				for (const line of [...box.querySelectorAll('.actor-line')].reverse()) {
-					root.prepend(line);
-				}
-				// White box behind each message/loop label so no line crosses the letters.
-				await document.fonts.ready;
-				for (const text of box.querySelectorAll('text.messageText, text.loopText')) {
-					const bounds = text.getBBox();
-					if (!bounds.width) continue;
-					const pad = 3;
-					const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-					rect.setAttribute('x', String(bounds.x - pad));
-					rect.setAttribute('y', String(bounds.y - 1));
-					rect.setAttribute('width', String(bounds.width + pad * 2));
-					rect.setAttribute('height', String(bounds.height + 2));
-					rect.setAttribute('fill', 'white');
-					text.before(rect);
-				}
-				// Mermaid emits width="100%": pin the natural size from the viewBox.
-				const element = box.querySelector('svg');
-				const { height, width } = element.viewBox.baseVal;
-				element.setAttribute('width', String(width));
-				element.setAttribute('height', String(height));
-				await document.fonts.ready;
-			}, { haloCss: haloCss(tokens), source: code });
+			await page.evaluate(
+				async ({ haloCss, source }) => {
+					const { svg } = await globalThis.mermaid.render(
+						'diagram',
+						source,
+					);
+					const box = document.querySelector('#box');
+					box.innerHTML = svg;
+					// Halo behind labels, injected last so it wins over Mermaid's own rules.
+					const style = document.createElementNS(
+						'http://www.w3.org/2000/svg',
+						'style',
+					);
+					style.textContent = haloCss;
+					box.querySelector('svg').append(style);
+					// Lifelines are drawn after the messages: send them to the back so text stays on top.
+					const root = box.querySelector('svg');
+					for (const line of [
+						...box.querySelectorAll('.actor-line'),
+					].reverse()) {
+						root.prepend(line);
+					}
+					// White box behind each message/loop label so no line crosses the letters.
+					await document.fonts.ready;
+					for (const text of box.querySelectorAll(
+						'text.messageText, text.loopText',
+					)) {
+						const bounds = text.getBBox();
+						if (!bounds.width) continue;
+						const pad = 3;
+						const rect = document.createElementNS(
+							'http://www.w3.org/2000/svg',
+							'rect',
+						);
+						rect.setAttribute('x', String(bounds.x - pad));
+						rect.setAttribute('y', String(bounds.y - 1));
+						rect.setAttribute(
+							'width',
+							String(bounds.width + pad * 2),
+						);
+						rect.setAttribute('height', String(bounds.height + 2));
+						rect.setAttribute('fill', 'white');
+						text.before(rect);
+					}
+					// Mermaid emits width="100%": pin the natural size from the viewBox.
+					const element = box.querySelector('svg');
+					const { height, width } = element.viewBox.baseVal;
+					element.setAttribute('width', String(width));
+					element.setAttribute('height', String(height));
+					await document.fonts.ready;
+				},
+				{ haloCss: haloCss(tokens), source: code },
+			);
 			await page.locator('#box').screenshot({
 				omitBackground: false,
 				path: resolve(OUT, `${basename(name, '.mmd')}.png`),

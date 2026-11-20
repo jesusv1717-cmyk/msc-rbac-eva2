@@ -13,12 +13,12 @@ Para evitar ambigüedades, el informe usa siempre estos términos con un único 
 | Término | Significado |
 | --- | --- |
 | Aplicación | Uno de los 37 sistemas de MSC Chile que consultan permisos (también llamados satélites). |
-| Permiso | Acceso a una aplicación con una de sus opciones; equivale a un registro del catálogo legado `tb_perfil`. |
-| Perfil | Paquete de permisos de varias aplicaciones que se asigna de una vez a una persona según su puesto (por ejemplo, «Operador de muelle»). Reemplaza la asignación de permisos sueltos. |
-| Excepción | Permiso que se concede o se retira a una persona puntual, fuera de sus perfiles, con ticket, justificación, vigencia y aprobación de otro administrador. |
-| Colaborador | Persona de MSC Chile que existe en el directorio corporativo. |
-| Cuenta | Usuario y contraseña del portal asociados a un colaborador. |
-| Rol del portal | Lo que una cuenta puede hacer dentro del portal: Administrador TI o Colaborador. No debe confundirse con un perfil. |
+| Permiso | Acceso a una aplicación con una de sus opciones; equivale a un registro de `transaccion` en el esquema de origen (sección 7). |
+| Perfil | Paquete de permisos de varias aplicaciones que se asigna de una vez a una persona según su puesto (por ejemplo, «Operador de muelle»). Cada persona tiene un solo perfil vigente. |
+| Excepción | Permiso que se concede o se retira a una persona puntual, fuera de su perfil, con ticket, justificación, vigencia y aprobación de otro administrador. |
+| Colaborador | Persona de MSC Chile que existe en el directorio corporativo. Se representa con un único registro `usuario`, que reúne identidad y credencial del portal (ya no hay tablas separadas). |
+| Cuenta | La capacidad de ese mismo `usuario` para ingresar al portal: existe desde que la sincronización lo detecta, y se completa con contraseña al activarse. |
+| Rol del portal | Lo que un usuario puede hacer dentro del portal: Administrador TI o Colaborador. No debe confundirse con un perfil. |
 
 Fuente: Elaboración propia (2026).
 
@@ -41,7 +41,7 @@ Los actores se mantienen respecto de la EVA 1, con un cambio: el colaborador pas
 | --- | --- | --- |
 | Administrador TI (personal de soporte y jefatura de TI) | Usuario directo | Aprueba accesos, asigna perfiles, copia los perfiles de un colaborador a otro, gestiona excepciones y consulta la bitácora. |
 | Colaborador de MSC Chile | Usuario directo (nuevo) | Solicita su acceso, consulta en solo lectura sus permisos y cambia su contraseña. |
-| Equipo de aplicaciones satélites | Interesado técnico | Sus 37 sistemas consultan permisos mediante los procedimientos legados o el nuevo endpoint. |
+| Equipo de aplicaciones satélites | Interesado técnico | Sus 37 sistemas consultarán los permisos efectivos mediante el nuevo endpoint REST, que reemplaza a los procedimientos y vistas legados. |
 | Directorio corporativo (AD) | Sistema externo | Entrega la lista de identidades activas; no autentica el portal. |
 
 Fuente: Elaboración propia a partir del informe de la EVA 1 y de la entrevista del 14-11-2026 (2026).
@@ -58,10 +58,10 @@ Para que la trazabilidad se pueda auditar fila por fila, cada necesidad recibe u
 | N-04 | Resolver los permisos de los satélites con baja latencia y sin sobrecargar SQL Server. | Causa 4 |
 | N-05 | Atender casos especiales con permisos fuera del perfil, sin alterar el permiso estándar. | Levantamiento EVA 1 |
 | N-06 | Saber quién concedió cada acceso, cuándo, por qué y con qué respaldo. | Consecuencia: trazabilidad |
-| N-07 | Responder a los satélites «la misma pregunta con la misma respuesta», sin interrupciones 24/7. | Restricción del cliente |
+| N-07 | Responder a los satélites «la misma pregunta con la misma respuesta», sin interrupciones 24/7, mediante un endpoint expuesto para su consumo. | Entrevista 14-11 (aclaración: no es una restricción de arquitectura) |
 | N-08 | Retirar los accesos oportunamente ante un egreso o cambio de perfil, y revisarlos periódicamente. | CAL-06 |
 | N-09 | Separar las funciones de quien solicita y quien aprueba un acceso o un privilegio excepcional. | CAL-07 |
-| N-10 | Que cada colaborador pueda ver a qué aplicaciones y con qué permisos tiene acceso. | Entrevista 14-11 |
+| N-10 | Que cada colaborador pueda ver a qué aplicaciones y con qué perfiles tiene asignado. | Entrevista 14-11 |
 | N-11 | Credenciales seguras: contraseñas que nadie de TI conoce, almacenadas sin posibilidad de revertirlas. | Entrevista 14-11 y legado |
 
 Fuente: Elaboración propia (2026).
@@ -73,11 +73,10 @@ El alcance aprobado en la EVA 1 se mantiene íntegro: no se retira ningún eleme
 **Incluido en el alcance:**
 
 - Portal web para el personal de TI y, en modo de solo lectura, para cada colaborador. Se ejecuta en Microsoft Edge dentro de Citrix Workspace.
-- Catálogo propio de departamentos y perfiles, con plantillas de permisos versionadas.
+- Catálogo propio de departamentos y perfiles, sobre el esquema que envió el docente.
 - Asignación por perfil, comparación y clonación, excepciones justificadas con aprobación, y bajas.
 - Bitácora de auditoría inmutable.
-- Endpoint REST de permisos efectivos con caché en Redis.
-- Capa de coexistencia que mantiene las firmas de los procedimientos almacenados legados.
+- Endpoint REST de permisos efectivos con caché en Redis, como canal único de consumo para las aplicaciones satélites.
 - **Agregado tras la EVA 1:**
   - Inicio de sesión con credenciales propias.
   - Solicitud y activación de acceso, y definición de contraseña por enlace de un solo uso.
@@ -90,10 +89,11 @@ El alcance aprobado en la EVA 1 se mantiene íntegro: no se retira ningún eleme
 
 **Excluido del alcance (sin cambios respecto de la EVA 1):**
 
-- Modificar el código de las 37 aplicaciones satélites.
 - Diseño para dispositivos móviles.
 - Integración bidireccional automática con los sistemas de Recursos Humanos.
 - Acceso a datos productivos de MSC Chile.
+
+La modificación del código de las 37 aplicaciones satélites para que consuman el nuevo endpoint deja de tratarse como una exclusión cerrada: es un punto en conversación con el cliente (Anexo B), que se resuelve aplicación por aplicación a medida que cada equipo confirma su migración.
 
 Respecto del «autoservicio para usuarios finales» excluido en la EVA 1: la vista personal es **solo de lectura** y la solicitud de acceso **no crea identidades**, porque solo pueden pedirla personas que ya existen en el directorio corporativo. Ninguna de las dos permite que un colaborador se otorgue permisos, por lo que la exclusión se mantiene.
 
@@ -127,10 +127,11 @@ Además, el diseño introduce los siguientes cambios respecto de la EVA 1, cada 
 | Roles del portal | No definidos | **Administrador TI** y **Colaborador** (visualizador), más roles técnicos. | Cliente: entrevista del 14-11. |
 | Requerimientos nuevos | — | Inicio de sesión, solicitud y activación de acceso, definición y recuperación de contraseña, vista personal y catálogo de aplicaciones (RF-13 a RF-18). | Cliente y CAL-07. |
 | Sincronización de identidades | Conciliación con Entra ID | Comparación con la lista de activos de AD **cada 10 minutos**, igual que el proceso actual del cliente. | Cliente. |
-| Propagación de cambios de perfil | No definida | El administrador elige aplicarla **a todos o solo a algunos** colaboradores del perfil. | Cliente y C-02. |
+| Propagación de cambios de perfil | No definida | El administrador elige aplicarla **a todos o solo a algunos** colaboradores del perfil; como el esquema de origen no versiona perfiles, «a todos» cambia la plantilla y «a algunos» se resuelve con excepciones individuales. | Cliente (esquema de origen) y C-02. |
 | Infraestructura | No definida | **Granja de servidores IIS con balanceo de carga (ARR)**; control explícito de concurrencia entre servidores. | Cliente. |
 | Rendimiento (RNF-01) | P95 < 20 ms sin condiciones | Meta condicionada a la infraestructura confirmada, medida con **600 consumidores concurrentes** en hora punta. | Cliente y CAL-04. |
 | Historias | HU01 y HU02 eran épicas | Divididas, y con historias nuevas para el acceso y la vista personal. | Retroalimentación. |
 | Coherencia entre informe y defensa | Stack presentado como pendiente en la defensa | El stack se adopta como decisión de diseño, con alternativas descartadas (sección 4). | Retroalimentación. |
+| Coexistencia con el legado | Procedimientos fachada y vistas de compatibilidad; endpoint de adopción opcional para los satélites. | Se eliminan los procedimientos y vistas legados; el endpoint REST es el único canal de consumo para las satélites. | Cliente: retroalimentación posterior a la entrevista del 14-11. |
 
 Fuente: Elaboración propia (2026).

@@ -1,0 +1,42 @@
+flowchart TB
+    classDef red fill:#FEE2E2,stroke:#E11927,stroke-width:1.5px,color:#991B1B;
+    classDef navy fill:#E0E7FF,stroke:#0A2540,stroke-width:1.5px,color:#0A2540;
+    classDef dark fill:#1E293B,stroke:#0F172A,stroke-width:1.5px,color:#FFFFFF;
+    classDef amber fill:#FEF3C7,stroke:#D97706,stroke-width:1.5px,color:#92400E;
+    classDef green fill:#D1FAE5,stroke:#059669,stroke-width:1.5px,color:#065F46;
+
+    subgraph REQ["Solicitudes en paralelo"]
+        direction TB
+        P1(["Portal web&nbsp;<br/>administradores y colaboradores&nbsp;"]):::navy
+        P2(["Aplicaciones satélites&nbsp;<br/>consulta de permisos&nbsp;"]):::navy
+        ARR["ARR&nbsp;<br/>reparte sin sesiones fijas&nbsp;"]:::navy
+        S1["Servidor IIS 1&nbsp;<br/>atiende portal y consultas&nbsp;"]:::red
+        S2["Servidor IIS 2&nbsp;<br/>atiende portal y consultas&nbsp;"]:::red
+        P1 --> ARR
+        P2 --> ARR
+        ARR --> S1
+        ARR --> S2
+    end
+
+    subgraph BG["Tareas en segundo plano"]
+        direction TB
+        T1["Sincronización con AD&nbsp;<br/>cada 10 minutos&nbsp;<br/>freno de 5 %&nbsp;"]:::red
+        T2["Vencimiento de excepciones&nbsp;<br/>cada hora&nbsp;<br/>revoca las vencidas&nbsp;"]:::red
+        T3["Envío de correos&nbsp;<br/>enlaces de un solo uso&nbsp;<br/>con reintentos&nbsp;"]:::red
+    end
+
+    LOCK{"¿Obtiene el bloqueo de&nbsp;<br/>aplicación sp_getapplock?&nbsp;"}:::amber
+    RUN["Ejecuta la tarea&nbsp;<br/>un solo servidor a la vez&nbsp;"]:::green
+    SKIP["Omite la ejecución&nbsp;<br/>otro servidor ya la tiene&nbsp;"]:::amber
+
+    ROW["Bloqueo de fila UPDLOCK, ROWLOCK&nbsp;<br/>y verificación de rowversion&nbsp;<br/>solo durante la transacción&nbsp;"]:::amber
+
+    DB[("SQL Server&nbsp;<br/>punto común de coordinación&nbsp;")]:::dark
+
+    S1 --> ROW
+    S2 --> ROW
+    ROW --> DB
+    BG --> LOCK
+    LOCK -- Sí --> RUN
+    LOCK -- No --> SKIP
+    RUN --> DB

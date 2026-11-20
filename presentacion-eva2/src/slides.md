@@ -252,28 +252,15 @@ Abajo están las reglas que aplicamos en el código. La principal: nadie, ni siq
 
 # <span class="i-mdi-layers-outline align-middle mr-2 text-brand-red" /> Arquitectura: una aplicación ordenada
 
-<div class="grid grid-cols-[1.25fr_1fr] gap-4 mt-2">
+<div class="grid grid-cols-[1fr_1fr] gap-4 mt-2 items-start">
 
-<div class="card p-3">
-
-```mermaid
-flowchart LR
-  classDef red fill:#FEE2E2,stroke:#E11927,stroke-width:2px,color:#991B1B;
-  classDef navy fill:#E0E7FF,stroke:#0A2540,stroke-width:2px,color:#0A2540;
-  classDef dark fill:#1E293B,stroke:#0F172A,stroke-width:2px,color:#FFFFFF;
-  classDef amber fill:#FEF3C7,stroke:#D97706,stroke-width:2px,color:#92400E;
-  U["Portal web<br/>(TI y colaboradores)"]:::navy --> API["Aplicación central<br/>reglas y seguridad"]:::red
-  API --> DB[("SQL Server<br/>datos y bitácora")]:::dark
-  API --> C[("Redis<br/>respuestas rápidas")]:::amber
-  AD(["Directorio AD"]):::navy -. "cada 10 min" .-> API
-  APPS(["37 aplicaciones"]):::navy -- "consultas de siempre" --> DB
-```
-
+<div class="rounded-2xl bg-white p-2 shadow-lg ring-1 ring-black/5">
+  <img src="./assets/img/01-vista-logica.png" class="mx-auto" style="max-height: 340px; width: auto" alt="Vista lógica: portal, API RBAC, datos y servicios externos" />
 </div>
 
 <div class="flex flex-col gap-2 text-xs">
   <div class="card p-2.5 border-l-3 border-brand-red"><b class="text-brand-red-dark">¿Por qué una sola aplicación?</b><br />Es lo que un equipo de 6 puede construir, probar y defender en un semestre. Microservicios fue descartado.</div>
-  <div class="card p-2.5 border-l-3 border-brand-navy"><b class="text-brand-navy-dark">La regla del cliente</b><br />«La pregunta y la respuesta siguen siendo las mismas»: las 37 apps no notan el cambio.</div>
+  <div class="card p-2.5 border-l-3 border-brand-navy"><b class="text-brand-navy-dark">La regla del cliente</b><br />«La pregunta y la respuesta siguen siendo las mismas»: cambia el canal (ahora un endpoint REST), no lo que reciben.</div>
   <div class="card p-2.5 border-l-3 border-brand-crimson"><b class="text-brand-crimson">Modelo 4+1</b><br />Qué hace (lógica) · cómo se organiza el código (desarrollo) · qué pasa en ejecución (procesos) · dónde corre (física) + escenarios.</div>
 </div>
 
@@ -319,31 +306,68 @@ Los datos se quedan en el SQL Server de MSC. Como no podemos usar Key Vault, la 
 
 <div class="flex-between items-center mb-1">
   <div class="eyebrow">Bloque 3 · Arquitectura e infraestructura</div>
-  <span class="chip bg-slate-100 text-xs font-semibold text-ink-soft border border-slate-200"><div class="i-mdi-alert-decagram-outline mr-1 text-brand-red" /> Escenarios (+1)</span>
+  <span class="chip bg-slate-100 text-xs font-semibold text-ink-soft border border-slate-200"><div class="i-mdi-alert-decagram-outline mr-1 text-brand-red" /> Caso borde · Concurrencia</span>
 </div>
 
-# <span class="i-mdi-help-rhombus-outline align-middle mr-2 text-brand-red" /> Casos borde: ¿qué pasa si…?
+# <span class="i-mdi-help-rhombus-outline align-middle mr-2 text-brand-red" /> ¿Qué pasa si dos administradores cambian al mismo usuario a la vez?
 
-<div class="grid grid-cols-[1fr_1fr] gap-4 mt-2">
-
-<div class="grid grid-cols-1 gap-2 text-xs">
-  <div class="card p-2.5 border-l-3 border-brand-red"><b class="text-brand-red-dark">…dos administradores cambian al mismo usuario a la vez?</b><br />La base deja pasar al primero; el segundo recibe «otro lo modificó, recargue».</div>
-  <div class="card p-2.5 border-l-3 border-brand-navy"><b class="text-brand-navy-dark">…se cae Redis?</b><br />Se responde desde la base: un poco más lento, pero sin errores.</div>
-  <div class="card p-2.5 border-l-3 border-brand-crimson"><b class="text-brand-crimson">…despiden a alguien?</b><br />En la siguiente revisión del directorio (máximo 10 minutos) pierde todo acceso.</div>
-  <div class="card p-2.5 border-l-3 border-slate-400"><b>…el directorio manda una lista vacía por error?</b><br />Se activa un freno: no se desactiva a nadie y se avisa a TI.</div>
-  <div class="text-ink-soft flex items-center gap-1.5"><div class="i-mdi-information-outline" /> 15 casos borde documentados, cada uno con su prueba.</div>
+<div class="card p-2 mt-2">
+  <img src="./assets/img/16-escenario-dos-administradores.png" class="mx-auto rounded-lg" style="max-height: 220px; max-width: 100%; width: auto" alt="Flujo por componentes del escenario de dos administradores modificando el mismo usuario" />
 </div>
 
-<div class="card p-2">
-  <img src="./assets/img/09-secuencia-concurrencia.png" class="w-full rounded-lg" alt="Secuencia de dos administradores modificando el mismo usuario desde servidores distintos" />
-</div>
-
+<div class="grid grid-cols-2 gap-2 mt-2 text-xs">
+  <div class="card p-2.5 border-l-3 border-brand-red"><b class="text-brand-red-dark">Qué pasa</b><br />La base deja pasar al primero; el segundo recibe «otro lo modificó, recargue» (409).</div>
+  <div class="card p-2.5 border-l-3 border-brand-navy"><b class="text-brand-navy-dark">Por qué así</b><br />Evaluamos la cola en Redis que nos sugirió el docente, pero elegimos el bloqueo de fila porque agrega menos piezas.</div>
 </div>
 
 <!--
 Guion (Bloque 3):
-"Usted nos pidió enfocar los escenarios del 4+1 en los casos borde. El más delicado es el que nos planteó: dos administradores que, al mismo tiempo, dan y quitan el mismo permiso desde servidores distintos. Lo resolvemos en la base de datos, que es el único punto común: la base bloquea a esa persona mientras dura el primer cambio, y el segundo administrador recibe un aviso para recargar. Evaluamos la cola en Redis que nos sugirió, pero elegimos el bloqueo de fila porque agrega menos piezas.
-También cubrimos qué pasa si se cae Redis, si despiden a alguien o si el directorio manda una lista vacía. En total documentamos 15 casos borde, cada uno con su prueba."
+"Usted nos pidió enfocar los escenarios del 4+1 en los casos borde. El más delicado es el que nos planteó: dos administradores que, al mismo tiempo, dan y quitan el mismo permiso desde servidores distintos. Lo resolvemos en la base de datos, que es el único punto común: la base bloquea a esa persona mientras dura el primer cambio, y el segundo administrador recibe un aviso para recargar. Evaluamos la cola en Redis que nos sugirió, pero elegimos el bloqueo de fila porque agrega menos piezas."
+-->
+
+---
+
+<div class="flex-between items-center mb-1">
+  <div class="eyebrow">Bloque 3 · Arquitectura e infraestructura</div>
+  <span class="chip bg-slate-100 text-xs font-semibold text-ink-soft border border-slate-200"><div class="i-mdi-alert-decagram-outline mr-1 text-brand-red" /> Caso borde · Redis caído</span>
+</div>
+
+# <span class="i-mdi-help-rhombus-outline align-middle mr-2 text-brand-navy" /> ¿Qué pasa si se cae Redis?
+
+<div class="card p-2 mt-2">
+  <img src="./assets/img/15-escenario-redis-caido.png" class="mx-auto rounded-lg" style="max-height: 220px; max-width: 100%; width: auto" alt="Flujo por componentes del escenario de consulta con Redis caído" />
+</div>
+
+<div class="card p-2.5 border-l-3 border-brand-navy mt-2 text-xs">
+  <b class="text-brand-navy-dark">Qué pasa</b><br />La API espera como máximo 50&nbsp;ms, responde desde SQL Server y emite una alerta a operación: un poco más lento, pero sin errores para el satélite.
+</div>
+
+<!--
+Guion (Bloque 3):
+"También cubrimos qué pasa si se cae Redis: la API no se queda esperando, espera máximo 50 milisegundos, lee la respuesta directo de SQL Server y avisa a operación. El satélite nunca ve un error, solo una respuesta un poco más lenta."
+-->
+
+---
+
+<div class="flex-between items-center mb-1">
+  <div class="eyebrow">Bloque 3 · Arquitectura e infraestructura</div>
+  <span class="chip bg-slate-100 text-xs font-semibold text-ink-soft border border-slate-200"><div class="i-mdi-alert-decagram-outline mr-1 text-brand-red" /> Caso borde · Desvinculación</span>
+</div>
+
+# <span class="i-mdi-help-rhombus-outline align-middle mr-2 text-brand-crimson" /> ¿Qué pasa si despiden a alguien, o el directorio falla?
+
+<div class="card p-2 mt-2">
+  <img src="./assets/img/17-escenario-desvinculacion.png" class="mx-auto rounded-lg" style="max-height: 220px; max-width: 100%; width: auto" alt="Flujo por componentes del escenario de desvinculación con freno de seguridad" />
+</div>
+
+<div class="grid grid-cols-2 gap-2 mt-2 text-xs">
+  <div class="card p-2.5 border-l-3 border-brand-crimson"><b class="text-brand-crimson">Despiden a alguien</b><br />En la siguiente sincronización (máximo 10 minutos) pierde todo acceso, sin que nadie tenga que avisarlo.</div>
+  <div class="card p-2.5 border-l-3 border-slate-400"><b>Lista vacía o anómala</b><br />Se activa el freno: no se desactiva a nadie y se avisa a TI. 15 casos borde documentados en total, cada uno con su prueba.</div>
+</div>
+
+<!--
+Guion (Bloque 3, cierre de escenarios):
+"También cubrimos qué pasa si despiden a alguien o si el directorio manda una lista vacía por error. En la siguiente sincronización, máximo 10 minutos, la persona pierde todo acceso sin que nadie tenga que avisarlo. Y si la lista llega vacía o con muchas menos personas, se activa un freno: no se desactiva a nadie y se avisa a TI, para no confundir una falla del directorio con una ola de despidos. En total documentamos 15 casos borde, cada uno con su prueba."
 -->
 
 ---

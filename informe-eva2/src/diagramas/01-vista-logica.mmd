@@ -16,7 +16,6 @@ flowchart TB
     subgraph D["Datos"]
         direction LR
         SQL[("SQL Server&nbsp;<br/>RBAC, cuentas,&nbsp;<br/>proyección y bitácora&nbsp;")]:::dark
-        Fac["Procedimientos&nbsp;<br/>fachada&nbsp;"]:::dark
         Redis[("Redis&nbsp;<br/>caché&nbsp;")]:::amber
     end
 
@@ -27,7 +26,6 @@ flowchart TB
     end
 
     P -- "HTTPS / JSON" --> A
-    SAT -. "REST opcional" .-> A
+    SAT -- "REST + clave de aplicación" --> A
     A -- "lee y escribe" --> D
     A -. "identidades y enlaces" .-> EXT
-    SAT -- "SPs legados" --> Fac

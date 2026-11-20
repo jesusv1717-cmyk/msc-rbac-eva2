@@ -1,0 +1,34 @@
+flowchart LR
+    classDef red fill:#FEE2E2,stroke:#E11927,stroke-width:1.5px,color:#991B1B;
+    classDef navy fill:#E0E7FF,stroke:#0A2540,stroke-width:1.5px,color:#0A2540;
+    classDef amber fill:#FEF3C7,stroke:#D97706,stroke-width:1.5px,color:#92400E;
+    classDef green fill:#D1FAE5,stroke:#059669,stroke-width:1.5px,color:#065F46;
+
+    ADM(["Administrador TI&nbsp;"]):::navy
+    SAT(["Aplicación satélite&nbsp;"]):::navy
+    SYNC(["Proceso de sincronización&nbsp;<br/>con AD&nbsp;"]):::navy
+
+    subgraph ESC["Escenarios de validación"]
+        direction TB
+        E1(["E-01 Clonación de permisos&nbsp;<br/>HU02 · HU08&nbsp;"]):::green
+        E3(["E-03 Dos administradores sobre&nbsp;<br/>el mismo usuario · HU01 · HU10&nbsp;"]):::amber
+        E2(["E-02 Consulta con Redis caído&nbsp;<br/>HU05&nbsp;"]):::amber
+        E4(["E-04 Desvinculación de&nbsp;<br/>un trabajador · HU12&nbsp;"]):::amber
+    end
+
+    subgraph VIS["Demostración"]
+        direction TB
+        F4["Secuencia de&nbsp;<br/>clonación&nbsp;"]:::red
+        F5["Secuencia de&nbsp;<br/>concurrencia&nbsp;"]:::red
+        F3["Secuencia de&nbsp;<br/>consulta&nbsp;"]:::red
+        F6["Secuencia de&nbsp;<br/>desvinculación&nbsp;"]:::red
+    end
+
+    ADM --> E1
+    ADM --> E3
+    SAT --> E2
+    SYNC --> E4
+    E1 --> F4
+    E3 --> F5
+    E2 --> F3
+    E4 --> F6
