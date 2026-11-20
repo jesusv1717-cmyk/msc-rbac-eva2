@@ -558,32 +558,39 @@ A la derecha, el cambio más visible: las contraseñas. Hoy se ven y se pueden r
 
 ---
 
-<div class="flex-between items-center mb-1">
-  <div class="eyebrow">Bloque 6 · Seguridad, pruebas y trazabilidad</div>
-  <span class="chip bg-slate-100 text-xs font-semibold text-ink-soft border border-slate-200"><div class="i-mdi-test-tube mr-1 text-brand-red" /> Plan de pruebas</span>
-</div>
-
 # <span class="i-mdi-check-decagram-outline align-middle mr-2 text-brand-navy" /> Cómo sabremos que funciona
 
-<div class="grid grid-cols-4 gap-3 mt-3 text-xs">
-  <div class="card p-3 text-center border-t-3 border-brand-navy"><div class="text-2xl font-extrabold text-brand-navy">23</div><div class="text-ink-soft">casos de que <b>funciona</b></div></div>
-  <div class="card p-3 text-center border-t-3 border-brand-red"><div class="text-2xl font-extrabold text-brand-red">12</div><div class="text-ink-soft">casos de que <b>rechaza</b> lo incorrecto</div></div>
-  <div class="card p-3 text-center border-t-3 border-brand-crimson"><div class="text-2xl font-extrabold text-brand-crimson">16</div><div class="text-ink-soft">casos de <b>seguridad</b></div></div>
-  <div class="card p-3 text-center border-t-3 border-slate-500"><div class="text-2xl font-extrabold text-ink">4</div><div class="text-ink-soft">escenarios de <b>carga</b>, hasta 600 consultas simultáneas</div></div>
+<div class="grid grid-cols-4 gap-3 mt-3 text-sm">
+  <div class="card p-3 border-t-3 border-brand-navy"><div class="text-3xl font-extrabold text-brand-navy leading-none">23</div><div class="font-bold text-brand-navy-dark mt-1">Funcionales</div><div class="text-ink-soft text-xs">Hace lo que promete</div></div>
+  <div class="card p-3 border-t-3 border-brand-red"><div class="text-3xl font-extrabold text-brand-red leading-none">12</div><div class="font-bold text-brand-navy-dark mt-1">Negativos</div><div class="text-ink-soft text-xs">Rechaza lo incorrecto sin cambiar nada</div></div>
+  <div class="card p-3 border-t-3 border-brand-crimson"><div class="text-3xl font-extrabold text-brand-crimson leading-none">16</div><div class="font-bold text-brand-navy-dark mt-1">Seguridad</div><div class="text-ink-soft text-xs">Nadie hace lo que no le corresponde</div></div>
+  <div class="card p-3 border-t-3 border-slate-500"><div class="text-3xl font-extrabold text-ink leading-none">4</div><div class="font-bold text-brand-navy-dark mt-1">Escenarios de carga</div><div class="text-ink-soft text-xs">~300 usuarios → ~600 consultas a la vez</div></div>
 </div>
 
-<div class="grid grid-cols-2 gap-3 mt-3 text-xs">
-  <div class="card p-3 border-l-4 border-brand-red">
-    <div class="font-bold text-brand-red-dark mb-1">Ejemplo · CP-06 · RF-12: despido</div>
-    <div class="text-ink/85"><b>Dado</b> un colaborador con permisos, <b>cuando</b> desaparece del directorio, <b>entonces</b> en 10 minutos o menos queda sin acceso, las 37 apps no reciben sus permisos y queda registrado.</div>
-  </div>
-  <div class="card p-3 border-l-4 border-brand-navy">
-    <div class="font-bold text-brand-navy-dark mb-1">Ejemplo · CP-34 · RF-11 y RF-15: aprobarse a sí mismo</div>
-    <div class="text-ink/85"><b>Dado</b> un administrador que creó una solicitud, <b>cuando</b> intenta aprobarla, <b>entonces</b> el sistema la rechaza, sigue pendiente y el intento queda registrado.</div>
-  </div>
+<div class="card p-3 mt-3 text-sm flex items-center gap-3">
+  <div class="i-mdi-stairs-up text-xl text-brand-navy shrink-0" />
+  <div class="whitespace-nowrap">La carga sube por escalones:</div>
+  <span class="chip bg-brand-navy text-white font-bold">150</span><span class="text-ink-soft">→</span>
+  <span class="chip bg-brand-navy text-white font-bold">300</span><span class="text-ink-soft">→</span>
+  <span class="chip bg-brand-red text-white font-bold">600</span>
+  <div class="ml-auto text-ink-soft text-xs">consultas simultáneas</div>
 </div>
 
-<div class="mt-3 text-xs text-ink-soft flex items-center gap-1.5"><div class="i-mdi-information-outline" /> Cada requisito tiene al menos una prueba con resultado observable. Los resultados se presentan en la EVA 3.</div>
+<div class="mt-4 mb-1.5 text-sm font-bold text-brand-navy-dark flex items-center gap-1.5"><div class="i-mdi-link-variant text-brand-red" /> Cada caso tiene un resultado que se comprueba sin opinar y está vinculado a un requisito:</div>
+
+<div class="card p-3 text-sm border-l-4 border-brand-red flex items-center gap-3">
+  <span class="font-bold text-brand-red-dark shrink-0 w-40">CP-06 · RF-12</span>
+  <span>Lo sacan del directorio</span><div class="i-mdi-arrow-right text-brand-red shrink-0" />
+  <span>en <b>≤ 10 minutos</b> queda sin acceso y queda registrado</span>
+</div>
+
+<div class="card p-3 mt-2 text-sm border-l-4 border-brand-navy flex items-center gap-3">
+  <span class="font-bold text-brand-navy-dark shrink-0 w-40">CP-34 · RF-11 y RF-15</span>
+  <span>Un admin intenta aprobar <b>su propia</b> solicitud</span><div class="i-mdi-arrow-right text-brand-navy shrink-0" />
+  <span>el sistema la <b>rechaza</b> y queda registrado</span>
+</div>
+
+<div class="mt-3 text-xs text-ink-soft flex items-center gap-1.5"><div class="i-mdi-information-outline" /> Cada requisito tiene al menos una prueba. Los resultados se presentan en la EVA 3.</div>
 
 <!--
 Guion (Bloque 6):
@@ -593,42 +600,56 @@ Cada caso tiene un resultado que se puede comprobar sin interpretación. Y cada 
 
 ---
 
-<div class="flex-between items-center mb-1">
-  <div class="eyebrow">Bloque 6 · Seguridad, pruebas y trazabilidad</div>
-  <span class="chip bg-slate-100 text-xs font-semibold text-ink-soft border border-slate-200"><div class="i-mdi-link-variant mr-1 text-brand-red" /> Trazabilidad</span>
-</div>
-
 # <span class="i-mdi-transit-connection-variant align-middle mr-2 text-brand-red" /> Todo se conecta con una necesidad
 
-<div class="grid grid-cols-7 gap-1 mt-3 text-xs text-center">
-  <div class="card p-2 border-t-3 border-brand-red"><b>Necesidad</b><div class="text-ink/75 mt-1">N-10 · ver mis permisos</div></div>
-  <div class="card p-2 border-t-3 border-brand-red"><b>Historia</b><div class="text-ink/75 mt-1">HU14</div></div>
-  <div class="card p-2 border-t-3 border-brand-navy"><b>Requisito</b><div class="text-ink/75 mt-1">RF-14</div></div>
-  <div class="card p-2 border-t-3 border-brand-navy"><b>Pantalla</b><div class="text-ink/75 mt-1">Mis permisos</div></div>
-  <div class="card p-2 border-t-3 border-brand-crimson"><b>Dato</b><div class="text-ink/75 mt-1">Permisos listos</div></div>
-  <div class="card p-2 border-t-3 border-brand-crimson"><b>Seguridad</b><div class="text-ink/75 mt-1">Solo lo propio</div></div>
-  <div class="card p-2 border-t-3 border-slate-500"><b>Prueba</b><div class="text-ink/75 mt-1">CP-15, CP-37</div></div>
+<div class="mt-3 text-sm font-bold text-brand-navy-dark flex items-center gap-1.5"><div class="i-mdi-link-variant text-brand-red" /> Ejemplo: de la necesidad a la prueba</div>
+
+<div class="card p-3 mt-1.5 text-sm flex items-center justify-between gap-1 text-center">
+  <div><div class="text-ink-soft text-xs">Necesidad</div><b class="text-brand-red-dark">N-10</b><div class="text-xs">Ver mis permisos</div></div>
+  <div class="i-mdi-arrow-right text-brand-red shrink-0" />
+  <div><div class="text-ink-soft text-xs">Historia</div><b>HU14</b></div>
+  <div class="i-mdi-arrow-right text-brand-red shrink-0" />
+  <div><div class="text-ink-soft text-xs">Requisito</div><b>RF-14</b></div>
+  <div class="i-mdi-arrow-right text-brand-red shrink-0" />
+  <div><div class="text-ink-soft text-xs">Pantalla</div><b>Mis permisos</b></div>
+  <div class="i-mdi-arrow-right text-brand-red shrink-0" />
+  <div><div class="text-ink-soft text-xs">Dato</div><b>Permisos ya calculados</b></div>
+  <div class="i-mdi-arrow-right text-brand-red shrink-0" />
+  <div><div class="text-ink-soft text-xs">Seguridad</div><b>Solo lo propio</b></div>
+  <div class="i-mdi-arrow-right text-brand-red shrink-0" />
+  <div><div class="text-ink-soft text-xs">Prueba</div><b class="text-brand-red-dark">CP-15 · CP-37</b></div>
 </div>
 
-<div class="grid grid-cols-2 gap-3 mt-4 text-xs">
-  <div class="card p-3 border-l-4 border-brand-navy">
-    <div class="font-bold text-brand-navy-dark mb-1 flex items-center gap-1.5"><div class="i-mdi-rocket-launch-outline" /> Próximo paso: Sprint 1</div>
-    <div class="text-ink/85">Construir el hito 1, acceso y cuentas. La demostración será pedir acceso, aprobarlo con otro administrador, crear la clave y entrar.</div>
+<div class="grid grid-cols-2 gap-3 mt-2 text-sm">
+  <div class="card p-2.5 border-l-4 border-brand-navy flex items-center gap-2"><b class="text-brand-navy-dark shrink-0">CP-15</b><span><b>Ve sus propios permisos</b>, con origen y vencimiento.</span></div>
+  <div class="card p-2.5 border-l-4 border-brand-red flex items-center gap-2"><b class="text-brand-red-dark shrink-0">CP-37</b><span><b>No puede ver</b> los permisos de otra persona.</span></div>
+</div>
+
+<div class="grid grid-cols-[1.15fr_1fr] gap-3 mt-4 text-sm">
+  <div class="card p-3 border-t-3 border-brand-navy">
+    <div class="font-bold text-brand-navy-dark mb-2 flex items-center gap-1.5"><div class="i-mdi-rocket-launch-outline" /> Próximo paso: Sprint 1, acceso y cuentas</div>
+    <div class="flex items-center gap-1 text-xs">
+      <span class="px-2 py-0.5 rounded-md bg-brand-navy text-white whitespace-nowrap">Pide acceso</span><div class="i-mdi-arrow-right text-ink-soft" />
+      <span class="px-2 py-0.5 rounded-md bg-brand-navy text-white whitespace-nowrap">Otro admin aprueba</span><div class="i-mdi-arrow-right text-ink-soft" />
+      <span class="px-2 py-0.5 rounded-md bg-brand-navy text-white whitespace-nowrap">Crea su contraseña</span><div class="i-mdi-arrow-right text-ink-soft" />
+      <span class="px-2 py-0.5 rounded-md bg-brand-red text-white whitespace-nowrap">Entra</span>
+    </div>
   </div>
-  <div class="card p-3 border-l-4 border-slate-400">
-    <div class="font-bold mb-1 flex items-center gap-1.5"><div class="i-mdi-clipboard-clock-outline" /> Pendientes declarados</div>
-    <ul class="text-ink/85 space-y-0.5">
-      <li>Tiempos actuales de alta, cambio y baja (línea base).</li>
-      <li>Entrevista con RRHH.</li>
-      <li>Esquema real de la base de datos.</li>
+  <div class="card p-3 border-t-3 border-slate-500">
+    <div class="font-bold mb-1.5 flex items-center gap-1.5"><div class="i-mdi-clipboard-clock-outline" /> Pendientes declarados</div>
+    <ul class="text-xs text-ink/85 space-y-0.5">
+      <li><b>Línea base:</b> medir cuánto demoran hoy altas, cambios y bajas.</li>
+      <li><b>RRHH:</b> confirmar cómo informan ingresos y salidas.</li>
+      <li><b>Base real:</b> confirmar el esquema de la base del cliente.</li>
     </ul>
   </div>
 </div>
 
 <!--
 Guion (Bloque 6, cierre):
-"Para cerrar: cada elemento del diseño se puede seguir desde una necesidad hasta una prueba. Por ejemplo, la necesidad de que cada persona vea sus permisos se convierte en la historia 14 y el requisito 14, se resuelve en la pantalla Mis permisos, usa la lista de permisos ya calculada, solo muestra lo propio y se verifica con dos pruebas. En el informe está la matriz completa para todos los requisitos.
-Lo siguiente es el sprint 1, el acceso y las cuentas. Y somos transparentes con lo pendiente: los tiempos actuales de cada operación, la entrevista con RRHH y el esquema real de la base."
+"Para cerrar: cada elemento del diseño se puede seguir desde una necesidad hasta una prueba. Por ejemplo, la necesidad de que cada persona vea sus permisos se convierte en la historia 14 y el requisito 14, se resuelve en la pantalla Mis permisos, usa la lista de permisos ya calculada, solo muestra lo propio y se verifica con dos pruebas: una que comprueba que la persona ve sus permisos, y otra que comprueba que no puede ver los de otro. En el informe está la matriz completa para todos los requisitos.
+Lo siguiente es el sprint 1, donde construimos el acceso y las cuentas: la demostración será pedir acceso, que otro administrador lo apruebe y entrar con la contraseña propia.
+Y declaramos lo que aún está pendiente: medir cuánto demoran hoy las altas, cambios y bajas, para comparar después; la entrevista con RRHH; y confirmar el esquema real de la base del cliente."
 -->
 
 ---
