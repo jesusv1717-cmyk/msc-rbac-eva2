@@ -1,10 +1,10 @@
-# Lámina 10 · Las Pantallas que Resuelven el Problema
+# Lámina 12 · Las Pantallas que Resuelven el Problema
 
-![Lámina 10 de la presentación: wireframes de comparar y clonar y de Mis permisos](assets/laminas/10.png "Figura 2. Lámina 10 de la presentación de la defensa. Fuente: Elaboración propia (2026).")
+![Lámina 12 de la presentación: wireframes de comparar y clonar y de Mis permisos](assets/laminas/10.png "Figura 2. Lámina 12 de la presentación de la defensa. Fuente: Elaboración propia (2026).")
 
 ## Lo que Dicen las Notas del PowerPoint
 
-> «Diseñamos ocho pantallas. Destacamos dos. A la izquierda, comparar y clonar: reemplaza la doble ventana. Se eligen dos personas, se ven las diferencias lado a lado y se copian los perfiles con un clic, pidiendo motivo y ticket. A la derecha, Mis permisos, el requisito nuevo que usted nos pidió: cada colaborador ve a qué aplicaciones tiene acceso y de dónde viene cada permiso. Es solo de lectura. Cada pantalla indica qué requisito cubre, qué valida y qué mensaje muestra si algo falla. Ocultar un botón es solo una ayuda: todo se vuelve a verificar en el servidor.»
+> «Diseñamos ocho pantallas. Destacamos dos. A la izquierda, comparar y clonar: reemplaza la doble ventana. Se eligen dos personas, se ven las diferencias lado a lado y se copia el perfil con un clic, pidiendo motivo y ticket. A la derecha, Mis permisos, el requisito nuevo que usted nos pidió: cada colaborador ve a qué aplicaciones tiene acceso y de dónde viene cada permiso. Es solo de lectura. Cada pantalla indica qué requisito cubre, qué valida y qué mensaje muestra si algo falla. Ocultar un botón es solo una ayuda: todo se vuelve a verificar en el servidor.»
 
 ## Guion para Decir
 
@@ -14,9 +14,9 @@
 
 **Comparar y clonar** (señala la pantalla de la izquierda):
 
-> «La de la izquierda es la que más le importa a TI: **comparar y clonar**. Reemplaza la famosa doble ventana. Antes, para darle a una persona los mismos permisos que a un compañero, había que abrir dos ventanas y comparar casilla por casilla. Ahora se eligen las dos personas en una sola pantalla, el sistema marca qué tienen igual y qué es distinto, y con un clic se copian los perfiles. Se pide un motivo y un número de ticket, para que quede registrado.
+> «La de la izquierda es la que más le importa a TI: **comparar y clonar**. Reemplaza la famosa doble ventana. Antes, para darle a una persona los mismos permisos que a un compañero, había que abrir dos ventanas y comparar casilla por casilla. Ahora se eligen las dos personas en una sola pantalla, el sistema marca qué tienen igual y qué es distinto, y con un clic se le copia el perfil de su compañero. Se pide un motivo y un número de ticket, para que quede registrado.
 >
-> Un detalle importante: se copian los **perfiles**, no las excepciones. Las excepciones son permisos personales que se aprobaron para otra persona; si el nuevo las necesita, la misma pantalla le ofrece solicitarlas, y pasan por aprobación.»
+> Un detalle importante: se copia el **perfil**, no las excepciones. Cada persona tiene un solo perfil, así que el del destino se reemplaza por el de la referencia. Las excepciones son permisos personales que se aprobaron para otra persona; si el nuevo las necesita, la misma pantalla le ofrece solicitarlas, y pasan por aprobación.»
 
 **Mis permisos** (señala la pantalla de la derecha):
 
@@ -26,7 +26,7 @@
 
 > «Todas las pantallas indican qué requerimiento cubren, qué validan y qué mensaje muestran si algo falla: definimos 16 mensajes de error. Y algo importante de seguridad: ocultar un botón es solo una ayuda visual; cada acción se vuelve a verificar en el servidor.»
 
-> **Señala en la lámina:** en clonación, la tabla de perfiles (columna «Resultado») y la fila de la excepción con «No se copia · Solicitar como excepción»; en Mis permisos, la columna «Origen» y el botón «Cambiar mi contraseña»; al final, la franja con las 8 pantallas.
+> **Señala en la lámina:** en clonación, la tabla del perfil vigente (columna «Destino después de clonar») y la fila de la excepción con «No se copia · Solicitar como excepción»; en Mis permisos, la columna «Origen» y el botón «Cambiar mi contraseña»; al final, la franja con las 8 pantallas.
 
 **Pase al bloque 5:**
 
@@ -52,7 +52,7 @@ Fuente: Elaboración propia a partir de la sección 6 del informe (2026).
 **Sobre comparar y clonar:**
 
 - Es la pantalla que atiende la **necesidad más importante del cliente** (N-02, eliminar la doble ventana). Si el profesor pregunta «¿qué componente soporta la necesidad más importante?», esta es la respuesta.
-- Copia los perfiles **en la misma versión** que tiene la persona de referencia, para que el destino quede exactamente igual. La jefatura lo pide así: «para Abraham, los mismos permisos que para Pablo».
+- Copia el **perfil vigente** de la persona de referencia, para que el destino quede con los mismos permisos. La jefatura lo pide así: «para Abraham, los mismos permisos que para Pablo».
 - Si después cambia la persona de referencia, el destino **no cambia**: la clonación es una copia en un momento dado.
 - Validaciones: las dos personas deben estar activas y ser distintas (ERR-07), y el motivo y el ticket son obligatorios (ERR-03). Si otro administrador modificó al destino mientras tanto, se rechaza y se pide recargar (ERR-05).
 - El informe tiene un diagrama de flujo propio de esta tarea (Figura 7), con sus caminos de error.

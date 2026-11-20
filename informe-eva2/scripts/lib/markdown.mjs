@@ -102,7 +102,8 @@ function numberingRule(state, { mode = 'romano', start = 1 } = {}) {
 	state.env.toc = toc;
 }
 
-const ID_PATTERN = /\b(?:RNF|RF|RN|RI|RD|CB|CP|CAL|ERR|EST|SEC|H|R|C|T|N|W)-\d{2}\b/gu;
+const ID_PATTERN =
+	/\b(?:RNF|RF|RN|RI|RD|CB|CP|CAL|ERR|EST|SEC|H|R|C|T|N|W)-\d{2}\b/gu;
 
 /** Keep requirement/test IDs (RF-01, CP-12…) on one line: wrap them in a nowrap span. */
 function nowrapIdsRule(state) {

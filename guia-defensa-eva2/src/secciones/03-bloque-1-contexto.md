@@ -28,4 +28,4 @@ Se deja de cubrir la necesidad N-10, que pidió el cliente: cada persona tendrí
 No. El colaborador solo ve lo suyo y solo puede pedir acceso si ya existe en el directorio de la empresa; nunca se otorga permisos. La exclusión de la EVA 1 se mantiene.
 
 **¿Cuál es la necesidad más importante del cliente y qué la resuelve?**
-Eliminar la doble ventana (N-02). La resuelve la pantalla de comparar y clonar, que copia los perfiles de una persona a otra en un solo paso.
+Eliminar la doble ventana (N-02). La resuelve la pantalla de comparar y clonar, que copia el perfil de una persona a otra en un solo paso.

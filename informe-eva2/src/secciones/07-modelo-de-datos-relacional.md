@@ -3,190 +3,273 @@
 <!-- GUÍA · Sección 8 de la pauta · Criterio 2.1.4 (10 pts, junto con NoSQL).
 Cubre: DER, diccionario, claves, cardinalidades, reglas de integridad; C-02/CAL-02 (propagación a todos o a algunos),
 C-06/CAL-03 (clonación), CAL-08 (ciclo de vida y sincronización cada 10 min); cuentas y enlaces; coexistencia (RF-08).
-El esquema real lo enviará el docente: este modelo se ajustará cuando llegue. -->
+El docente envió el esquema real (Anexo B): este modelo se construye directamente sobre él, "en base al origen
+con mejoras", como pidió el cliente. -->
 
-El modelo relacional parte del esquema que ya existe. En el legado, cada **sistema** (una de las 37 aplicaciones) tiene opciones de acceso que agrupan **transacciones** (opciones de menú), y a cada usuario se le asignan una por una, sistema por sistema (`tb_usuario_sistema_perfil`). En este informe, cada una de esas opciones de acceso se llama **permiso**. Lo que falta es el **perfil**: un paquete de permisos de varias aplicaciones que se asigna de una vez. El diseño conserva el catálogo legado y agrega encima, en un esquema `rbac`, las tablas de perfiles, colaboradores, cuentas, excepciones, proyección y auditoría.
+El cliente pidió explícitamente **modelar la base de datos a partir del esquema de origen, con mejoras** — no reemplazarlo por un diseño paralelo. Este modelo toma tal cual las entidades que envió el docente (`sistema`, `perfil`, `transaccion`, `usuario`, `agencia`, `departamento`, `control_ui`, `solicitud_acceso`, `link_activacion`, `bloqueo_registro`, `importacion_ad`, `auditoria`, `permiso_adiciona`, `perfil_transaccion_cambio`) y agrega solo las columnas puntuales que los requerimientos ya acordados con el cliente exigen y que el esquema de origen no trae (detalladas en «Mejoras sobre el Esquema de Origen»).
 
-En este modelo, **un permiso es el acceso a una aplicación con una de sus opciones** y corresponde a un registro del catálogo legado `tb_perfil` (columna `dc_perfil`). Los nombres de las tablas legadas se mantienen porque los satélites dependen de ellos. Así, los permisos efectivos se entregan a los satélites con las mismas claves que ya conocen. El docente se comprometió a enviar el esquema real; cuando llegue, se verificará que las tablas legadas referenciadas coincidan con este modelo.
+En este modelo, **un permiso es un registro de `transaccion`** (una opción dentro de una aplicación, por ejemplo «Aprobar» o «Eliminar»), agrupado por `sistema` a través de `sistema_transaccion`. Un **perfil** es un paquete de transacciones de distintos sistemas (`perfil_sistema_transaccion`) que se asigna a una persona de una vez. Cada **usuario** tiene **un solo perfil vigente** (clave foránea directa, no una lista de asignaciones), y las diferencias puntuales respecto de ese perfil se resuelven con **excepciones** (`permiso_adiciona`).
 
 ## Diagrama Entidad-Relación
 
-El modelo se presenta en tres diagramas. La Figura 16 muestra el núcleo RBAC; las tablas con prefijo `tb_` pertenecen al esquema legado `dbo` y se mantienen sin cambios.
+La Figura 23 muestra el esquema completo tal como lo envió el docente. No hay tablas con prefijo `tb_`: estas son las tablas reales del sistema MSC.Security, sin una capa `rbac` paralela.
 
-![Diagrama entidad-relación del núcleo RBAC](assets/diagramas/06-der.png "Figura 16. DER del núcleo RBAC: catálogo, versiones de perfil, asignaciones, excepciones y proyección. Fuente: Elaboración propia (2026).")
-
-La Figura 17 muestra las identidades, las cuentas del portal y la sincronización con el directorio:
-
-![Diagrama entidad-relación de cuentas, acceso y sincronización](assets/diagramas/10-der-cuentas.png "Figura 17. DER de colaboradores, cuentas, solicitudes de acceso, enlaces y sincronización. Fuente: Elaboración propia (2026)."){.img-h12}
-
-La Figura 18 muestra la auditoría y la recertificación:
-
-![Diagrama entidad-relación de auditoría y recertificación](assets/diagramas/07-der-auditoria.png "Figura 18. DER de auditoría y recertificación. Fuente: Elaboración propia (2026)."){.img-h12}
+![Diagrama entidad-relación del esquema de origen enviado por el docente](assets/diagramas/06-der.svg "Figura 23. DER del esquema de origen: catálogo, usuarios, excepciones, acceso y auditoría. Fuente: Esquema provisto por el docente (Anexo B), 2026.")
 
 ## Diccionario de Datos
 
-Las tablas nuevas usan nombres en español sin prefijos; los prefijos del legado (`dc_` código, `dg_` glosa) se conservan solo en las columnas que referencian tablas legadas. Las tablas que se modifican desde el portal incluyen además una columna `fila_version` (`rowversion`) para el control de concurrencia de la sección 4.
+Las tablas usan nombres en español sin prefijos, tal como las envió el docente. Las columnas marcadas **«agregada»** no vienen en el esquema de origen: las suma este diseño para cumplir un requerimiento ya acordado con el cliente (se detalla el porqué en «Mejoras sobre el Esquema de Origen»).
 
-**`rbac.colaborador`**: identidad de una persona, sincronizada desde el directorio.
-
-| Columna | Tipo | Nulo | Descripción y regla |
-| --- | --- | --- | --- |
-| `id_colaborador` | `int` identidad | No | Clave primaria. |
-| `id_directorio` | `varchar(100)` | No | Identificador de la persona en AD. Único: no hay colaborador sin identidad corporativa (CAL-08). |
-| `dc_usuario` | `varchar(50)` | No | Usuario legado (`dbo.tb_usuario`), la clave que usan los satélites. Único. |
-| `nombre`, `correo`, `departamento_ad` | `nvarchar(150)` | No | Copia desde el directorio en cada sincronización. `departamento_ad` es informativo: el departamento del perfil es el del catálogo propio. |
-| `estado` | `varchar(12)` | No | `ACTIVO` o `DESACTIVADO`. |
-| `desactivado_en`, `desactivado_por` | `datetime2`, `varchar(50)` | Sí | Quién lo desactivó: un administrador o `PROCESO_SINCRONIZACION`. |
-
-**`rbac.cuenta`**: credencial para ingresar al portal. Se implementa con las tablas de usuarios de ASP.NET Core Identity, extendidas con estas columnas.
+**`sistema`**: una de las 37 aplicaciones satélites.
 
 | Columna | Tipo | Nulo | Descripción y regla |
 | --- | --- | --- | --- |
-| `id_cuenta` | `int` identidad | No | Clave primaria. |
-| `id_colaborador` | `int` | No | Único: una cuenta por colaborador. |
-| `nombre_usuario` | `varchar(50)` | No | Único. Coincide con el usuario corporativo. |
-| `hash_contrasena` | `varchar(400)` | Sí | *Hash* con sal generado por Identity (PBKDF2 con miles de iteraciones). Es nulo hasta que la persona define su contraseña. Nunca existe una columna con la contraseña. |
-| `rol` | `varchar(20)` | No | `ADMINISTRADOR_TI` o `COLABORADOR`. Un solo valor por cuenta. |
-| `estado` | `varchar(12)` | No | `PENDIENTE_ACTIVACION`, `ACTIVA`, `BLOQUEADA` o `DESACTIVADA`. |
-| `intentos_fallidos`, `bloqueada_hasta` | `int`, `datetime2` | Sí en `bloqueada_hasta` | Control de fuerza bruta: 5 intentos y 15 minutos. |
-| `sello_seguridad` | `varchar(100)` | No | Cambia al definir una contraseña nueva, lo que invalida todas las sesiones abiertas. |
+| `id` | `int` identidad | No | Clave primaria. |
+| `nombre`, `codigo` | `varchar(100)`, `varchar(20)` | No | Nombre y sigla de la aplicación. |
+| `estado` | `boolean` | No | Baja lógica: da de baja un sistema sin borrar su historial. |
 
-**`rbac.solicitud_acceso`** y **`rbac.enlace_un_uso`**: flujo de activación y recuperación.
+**`agencia`**: sucursal a la que pertenece un usuario. No existía en el modelo de la EVA 1; la entrega el esquema de origen.
 
 | Columna | Tipo | Nulo | Descripción y regla |
 | --- | --- | --- | --- |
-| `solicitud_acceso.estado` | `varchar(10)` | No | `PENDIENTE`, `APROBADA` o `RECHAZADA`. Índice único filtrado: una sola solicitud pendiente por colaborador. |
-| `solicitud_acceso.creada_por` | `int` | Sí | Nulo si la creó el propio colaborador; si no, la cuenta del administrador que la creó. |
-| `solicitud_acceso.resuelta_por` | `int` | Sí | Restricción `CHECK`: distinta de `creada_por` (separación de funciones). |
-| `solicitud_acceso.id_perfil_inicial` | `int` | Sí | Perfil asignado al aprobar; obligatorio si el estado es `APROBADA`. |
-| `enlace_un_uso.tipo` | `char(1)` | No | `A` activación o `R` restablecimiento. |
-| `enlace_un_uso.hash_token` | `binary(32)` | No | Solo se guarda el *hash* SHA-256 del enlace; el enlace completo existe únicamente en el correo. |
-| `enlace_un_uso.expira_en`, `usado_en` | `datetime2` | Sí en `usado_en` | Vence a los 15 minutos. Un enlace usado o vencido no se acepta. Al crear uno nuevo, los anteriores de la misma cuenta quedan invalidados. |
+| `id` | `int` identidad | No | Clave primaria. |
+| `nombre` | `varchar(100)` | No | Nombre de la agencia. |
+| `estado`, `fecha_creacion` | `boolean`, `datetime2` | No | Baja lógica y alta. |
 
-**`rbac.perfil`**, **`rbac.perfil_version`** y **`rbac.perfil_version_permiso`**: perfil corporativo y sus plantillas versionadas.
+**`departamento`**: catálogo propio del sistema, independiente del directorio (N-03). El esquema de origen ya resuelve la causa 3, porque es una tabla propia y no un atributo leído desde AD.
 
 | Columna | Tipo | Nulo | Descripción y regla |
 | --- | --- | --- | --- |
-| `perfil.id_perfil`, `perfil.id_departamento`, `perfil.nombre` | `int`, `int`, `nvarchar(100)` | No | Nombre único dentro del departamento. Un perfil con asignaciones vigentes solo se desactiva. |
-| `perfil_version.version` | `int` | No | Clave primaria compuesta con `id_perfil`. Cada cambio de plantilla crea una versión nueva; las anteriores no se modifican. |
-| `perfil_version_permiso.dc_perfil` | `int` | No | Permisos de esa versión de la plantilla. |
+| `id` | `int` identidad | No | Clave primaria. |
+| `nombre` | `varchar(100)` | No | Nombre único. |
+| `estado` | `boolean` | No | Baja lógica. |
 
-**`rbac.asignacion_perfil`**: perfil y versión que tiene un colaborador.
-
-| Columna | Tipo | Nulo | Descripción y regla |
-| --- | --- | --- | --- |
-| `id_asignacion` | `bigint` identidad | No | Clave primaria. |
-| `id_colaborador`, `id_perfil`, `version` | `int` | No | La versión indica qué plantilla aplica a este colaborador. Índice único filtrado: un perfil no puede estar vigente dos veces para la misma persona. |
-| `fecha_inicio`, `fecha_fin` | `datetime2` | Sí en `fecha_fin` | Vigente mientras `fecha_fin` sea nula. Nunca se borra: se cierra. |
-| `id_evento_origen` | `bigint` | No | Evento de auditoría que la creó (asignación, clonación, aprobación de acceso o carga inicial). |
-
-**`rbac.excepcion`**: permiso individual fuera del perfil.
+**`control_ui`**: clasifica cada `transaccion` según el control de interfaz al que corresponde (por ejemplo, botón, menú o pantalla).
 
 | Columna | Tipo | Nulo | Descripción y regla |
 | --- | --- | --- | --- |
-| `id_colaborador`, `dc_perfil` | `int` | No | A quién y sobre qué permiso. |
-| `tipo` | `char(1)` | No | `C` concede un permiso que el perfil no da; `R` retira uno que el perfil sí da. |
-| `justificacion`, `ticket` | `nvarchar(500)`, `varchar(30)` | No | Obligatorios. |
-| `fecha_inicio`, `fecha_termino` | `date` | No | Término posterior al inicio y a no más de 180 días (propuesta por validar). |
-| `estado` | `varchar(12)` | No | `PENDIENTE`, `APROBADA`, `RECHAZADA`, `VENCIDA` o `REVOCADA`. |
-| `solicitada_por`, `resuelta_por` | `int` | Sí en `resuelta_por` | Restricción `CHECK`: distintos. |
+| `id` | `int` identidad | No | Clave primaria. |
+| `nombre` | `varchar(100)` | No | Nombre del control. |
 
-**`rbac.permiso_efectivo`**: proyección de lo que cada usuario puede hacer. Solo la escribe el motor de permisos.
+Fuente: Elaboración propia a partir del esquema de origen (Anexo B), 2026.
+
+**`transaccion`**: catálogo transversal de opciones (Aprobar, Leer, Eliminar...). Es lo que este informe llama **permiso**.
 
 | Columna | Tipo | Nulo | Descripción y regla |
 | --- | --- | --- | --- |
-| `dc_usuario`, `dc_sistema`, `dc_perfil` | `varchar(50)`, `int`, `int` | No | Clave primaria compuesta en el mismo orden que `tb_usuario_sistema_perfil`, para que las consultas de los satélites usen el índice. |
-| `origen` | `varchar(10)` | No | `PERFIL`, `EXCEPCION` o `MIGRADO`. |
-| `calculado_en` | `datetime2` | No | Momento del último recálculo. |
+| `id` | `int` identidad | No | Clave primaria. |
+| `id_control_ui` | `int` FK | No | A qué control de interfaz corresponde. |
+| `nombre` | `varchar(100)` | No | Nombre de la opción. |
 
-**`rbac.ejecucion_sincronizacion`**: registro de cada sincronización con el directorio (RNF-13). Guarda inicio, fin, cantidad de activos recibidos, altas, bajas, si el freno se activó y el motivo.
-
-**`rbac.evento_auditoria`** y **`rbac.adjunto_auditoria`**: bitácora inmutable.
+**`sistema_transaccion`**: qué transacciones existen realmente en cada sistema; el catálogo válido para armar un perfil.
 
 | Columna | Tipo | Nulo | Descripción y regla |
 | --- | --- | --- | --- |
-| `id_evento` | `bigint` identidad | No | Clave primaria. |
-| `id_operacion` | `uniqueidentifier` | No | Agrupa los eventos de una misma operación, por ejemplo un cambio de plantilla aplicado a 37 colaboradores. |
-| `fecha_utc` | `datetime2` | No | Asignada por el servidor de base de datos. |
-| `tipo_evento` | `varchar(30)` | No | Por ejemplo, `LOGIN_FALLIDO`, `ACCESO_APROBADO`, `ASIGNAR_PERFIL`, `CLONACION`, `BAJA_AUTOMATICA` o `ANULACION`. |
-| `id_operador`, `id_colaborador` | `varchar(50)`, `int` | Sí en `id_colaborador` | Quién (una cuenta o el proceso de sincronización) y a quién. |
-| `ticket`, `justificacion` | `varchar(30)`, `nvarchar(500)` | Sí | Obligatorios en los cambios hechos por personas. |
-| `detalle` | `nvarchar(max)` | No | JSON con el estado anterior y posterior; `CHECK (ISJSON(detalle) = 1)`. Nunca contiene contraseñas ni enlaces. |
-| `id_evento_anulado` | `bigint` | Sí | Una corrección crea un evento `ANULACION` que referencia al original (RNF-04). |
-| `adjunto_auditoria.sha256` | `binary(32)` | No | Huella del archivo de respaldo, de máximo 5 MB. |
+| `id_sistema`, `id_transaccion` | `int` FK, `int` FK | No | Clave primaria compuesta. |
 
-**`rbac.departamento`**, **`rbac.campana_recertificacion`** y **`rbac.decision_recertificacion`** completan el modelo para HU06 y HU11. Una campaña pertenece a un departamento y está `ABIERTA` o `CERRADA`; cada decisión registra, para un colaborador y un permiso, si se confirma o se revoca, quién decidió y cuándo.
+**`perfil`**: paquete de permisos que se asigna de una vez. Nombre único.
+
+| Columna | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `id` | `int` identidad | No | Clave primaria. |
+| `nombre` | `varchar(100)` | No | Nombre único. |
+| `estado`, `fecha_creacion` | `boolean`, `datetime2` | No | Baja lógica y alta. |
+| `rowversion` *(agregada)* | `rowversion` | No | Protege contra dos administradores editando la misma plantilla a la vez (RI-10). |
+
+**`perfil_sistema_transaccion`**: las transacciones que un perfil concede **hoy**. No hay versiones: un cambio aquí es inmediato para todos los usuarios con ese perfil.
+
+| Columna | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `id_perfil`, `id_sistema`, `id_transaccion` | `int` FK (×3) | No | Clave primaria compuesta. |
+
+Fuente: Elaboración propia a partir del esquema de origen (Anexo B), 2026.
+
+**`usuario`**: identidad y credencial en una sola tabla. Reemplaza a `colaborador` + `cuenta` del diseño de la EVA 1.
+
+| Columna | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `id` | `varchar(50)` | No | Clave primaria: el código de AD. Un usuario no existe sin identidad corporativa (CAL-08). |
+| `nombre_usuario` | `varchar(50)` | No | Usuario de ingreso al portal. |
+| `email` | `varchar(150)` | No | Copiado desde el directorio en cada sincronización. |
+| `password_hash` | `varchar(400)` | Sí | *Hash* con sal (PBKDF2), nunca el texto de la contraseña. Nulo hasta que la persona activa su cuenta. El esquema de origen ya trae esta columna; antes de usarla hay que confirmar con el cliente que hoy no guarda la contraseña de forma reversible — el mismo riesgo que R-12 documenta para `tb_usuario.dg_password` en el sistema actual. |
+| `rol_plataforma` | `varchar(20)` | No | `ADMINISTRADOR_TI` o `COLABORADOR`. |
+| `id_departamento` | `int` FK | Sí | Departamento al que pertenece. |
+| `id_agencia` | `int` FK | Sí | Agencia asignada. |
+| `id_perfil` | `int` FK | Sí | **El único perfil vigente del usuario** (1:1). Nulo hasta que se aprueba su primera solicitud de acceso. |
+| `estado` | `boolean` | No | Baja lógica: activo o inactivo. |
+| `intentos_fallidos` | `int` | No | Control de fuerza bruta. |
+| `bloqueada_hasta` | `datetime2` *(agregada)* | Sí | Vence el bloqueo tras 5 intentos fallidos (15 minutos). El esquema de origen cuenta los intentos pero no trae esta columna. |
+| `sello_seguridad` | `varchar(100)` *(agregada)* | No | Cambia al definir una contraseña nueva, invalidando las sesiones abiertas (RNF-10). |
+| `rowversion` | `rowversion` | No | Control de concurrencia (sección 4): dos administradores no pueden modificar al mismo usuario a la vez sin detectarlo. |
+
+Fuente: Elaboración propia a partir del esquema de origen (Anexo B), 2026.
+
+**`permiso_adiciona`**: la excepción — un permiso puntual que se concede o se retira a un usuario, fuera de su perfil.
+
+| Columna | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `id` | `bigint` identidad | No | Clave primaria. |
+| `id_usuario`, `id_sistema`, `id_transaccion` | FK | No | A quién, sobre qué permiso. |
+| `asignado` | `boolean` | No | `true` concede un permiso que el perfil no da; `false` retira uno que el perfil sí da. |
+| `motivo` | `nvarchar(500)` | No | Justificación obligatoria. |
+| `creado_por` | `varchar(50)` | No | Quién la registró. |
+| `fecha_creacion` | `datetime2` | No | Momento del registro. |
+| `estado` | `varchar(12)` *(agregada)* | No | `PENDIENTE`, `APROBADA`, `RECHAZADA`, `VENCIDA` o `REVOCADA`. El esquema de origen no trae un flujo de aprobación: esta columna lo habilita (N-09). |
+| `aprobado_por` | `varchar(50)` *(agregada)* | Sí | Restricción `CHECK`: distinto de `creado_por` (RI-03, separación de funciones). |
+| `fecha_termino` | `date` *(agregada)* | No | Vigencia obligatoria, no más de 180 días (RI-04, propuesta por validar). Sin esta columna, una excepción del esquema de origen no vence nunca. |
+
+Fuente: Elaboración propia a partir del esquema de origen (Anexo B), 2026.
+
+**`auditoria`**: bitácora. Reemplaza a `evento_auditoria` + `adjunto_auditoria` del diseño de la EVA 1, de forma más simple.
+
+| Columna | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `id` | `bigint` identidad | No | Clave primaria. |
+| `id_usuario` | `varchar(50)` | No | A quién afecta el evento. |
+| `accion` | `varchar(30)` | No | Por ejemplo `LOGIN_FALLIDO`, `ACCESO_APROBADO`, `CAMBIO_PERFIL` o `BAJA_AUTOMATICA`. |
+| `ejecutado_por` | `varchar(50)` | No | Una persona (su `id` de `usuario`) o `PROCESO_AD_SYNC`. |
+
+Fuente: Elaboración propia a partir del esquema de origen (Anexo B), 2026.
+
+**`solicitud_acceso`** y **`link_activacion`**: flujo de activación.
+
+| Columna de `solicitud_acceso` | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `id_usuario` | `varchar(50)` FK | No | Quién pide el acceso. |
+| `aprobado_por` | `varchar(50)` | Sí | Restricción `CHECK` ya presente en el esquema de origen: distinto de `id_usuario` (nadie aprueba su propia solicitud). |
+| `creado_por` *(agregada)* | `varchar(50)` | Sí | Nulo si la creó el propio usuario; si no, quien la creó. Sin esta columna no se puede exigir que el aprobador sea distinto de quien la creó (CB-02), solo que sea distinto del solicitante. |
+| `estado` | `varchar(10)` | No | `PENDIENTE`, `APROBADA` o `RECHAZADA`. |
+
+| Columna de `link_activacion` | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `id_token` | PK | No | Clave primaria. |
+| `token_hash` | `binary(32)` | No | *Hash* SHA-256 del enlace; el enlace completo solo existe en el correo. |
+| `fecha_vencimiento`, `activo` | `datetime2`, `boolean` | No | Vence a los 15 minutos. Un enlace vencido o ya usado (`activo = false`) no se acepta. |
+
+Al aprobar una solicitud, el perfil elegido se escribe directamente en `usuario.id_perfil`: no hace falta una columna de «perfil inicial» en `solicitud_acceso`, porque el usuario solo tiene un perfil a la vez.
+
+Fuente: Elaboración propia a partir del esquema de origen (Anexo B), 2026.
+
+**`bloqueo_registro`**: bloqueo pesimista del sistema original.
+
+| Columna | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `tipo_entidad`, `id_registro` | `varchar`, `varchar` (clave compuesta) | No | Qué se bloqueó: `SISTEMA`, `USUARIO`, `PERFIL` o `TRANSACCION`, y su identificador. |
+| `id_usuario_bloqueo` | FK | No | Quién tiene el bloqueo activo. |
+| `fecha_inicio_bloqueo`, `fecha_expiracion` | `datetime2` | No | El bloqueo caduca solo (TTL), a diferencia del legado actual, donde un bloqueo podía quedar abierto si alguien cerraba la aplicación sin liberarlo. |
+
+El diseño **no usa este mecanismo** para las operaciones del portal: la sección 4 ya resolvió la concurrencia con bloqueo de fila dentro de la transacción (`UPDLOCK, ROWLOCK`) y verificación de `rowversion`, que es más simple y no depende de que cada cliente recuerde liberar el bloqueo. `bloqueo_registro` se mantiene en el esquema por si algún proceso legado todavía la usa; el motor de permisos no escribe en ella.
+
+Fuente: Elaboración propia a partir del esquema de origen (Anexo B), 2026.
+
+**`importacion_ad`**: registro de cada sincronización con el directorio (RNF-13). Reemplaza a `ejecucion_sincronizacion`.
+
+| Columna | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `id_importacion` | PK | No | Clave primaria. |
+| `fecha_ejecucion` | `datetime2` | No | Momento de la corrida. |
+| `cantidad_usuarios` | `int` | No | Activos recibidos del directorio. |
+| `resultado` | `varchar(20)` | No | `OK` o `FRENO_ACTIVADO`, según si la lista pasó el freno de seguridad de la sección 4. |
+
+Fuente: Elaboración propia a partir del esquema de origen (Anexo B), 2026.
+
+**`perfil_transaccion_cambio`**: bitácora de cambios a una plantilla de perfil. No es un mecanismo de versiones — es el registro de auditoría de cada cambio.
+
+| Columna | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `id` | `bigint` identidad | No | Clave primaria. |
+| `id_perfil`, `id_transaccion` | `int` FK | No | Qué perfil cambió y sobre qué transacción. |
+| `agrega` | `boolean` | No | `true` si se agregó la transacción al perfil, `false` si se quitó. |
+| `fecha_creacion` | `datetime2` | No | Momento del cambio. |
+
+**`perfil_transaccion_cambio_usuario`**: cada usuario que tenía el perfil cuando se aplicó el cambio, y por lo tanto quedó afectado por él.
+
+| Columna | Tipo | Nulo | Descripción y regla |
+| --- | --- | --- | --- |
+| `id_cambio` | `bigint` FK | No | A qué cambio corresponde (`perfil_transaccion_cambio`). |
+| `id_usuario` | `varchar(50)` FK | No | Usuario afectado por ese cambio. |
+
+Fuente: Elaboración propia a partir del esquema de origen (Anexo B), 2026.
 
 ## Claves, Cardinalidades y Reglas de Integridad
 
-Las cardinalidades principales del modelo son:
+Las cardinalidades principales del esquema de origen son:
 
-- Un **departamento** agrupa cero o más perfiles, y cada perfil pertenece a uno.
-- Un **perfil** tiene una o más versiones, y cada versión tiene uno o más permisos.
-- Un **colaborador** corresponde a un usuario legado (uno a uno), tiene como máximo una cuenta, y puede tener cero o más solicitudes, asignaciones, excepciones y permisos efectivos.
-- Una **cuenta** puede tener cero o más enlaces, pero solo uno vigente.
-- Un **evento de auditoría** puede tener cero o más adjuntos, y puede anular a un evento anterior.
+- Un **departamento** o una **agencia** agrupan cero o más usuarios; cada usuario pertenece como máximo a uno de cada uno.
+- Un **perfil** concede cero o más transacciones (vía `perfil_sistema_transaccion`), y es el perfil vigente de cero o más usuarios. **Un usuario tiene como máximo un perfil** — ya no varios a la vez, como proponía el diseño de la EVA 1.
+- Un **usuario** puede tener cero o más excepciones (`permiso_adiciona`), solicitudes de acceso, enlaces de activación y eventos de auditoría.
+- Un **cambio de perfil** (`perfil_transaccion_cambio`) deja un registro por cada usuario que tenía ese perfil en ese momento (`perfil_transaccion_cambio_usuario`).
 
-Las reglas que la base de datos puede asegurar se implementan como restricciones, para que se cumplan aunque exista un error en la aplicación:
+Las reglas que la base de datos puede asegurar se implementan como restricciones:
 
 | ID | Regla | Dónde se asegura |
 | --- | --- | --- |
-| RI-01 | No existe un colaborador sin identidad en el directorio, ni dos con la misma. | `NOT NULL` y `UNIQUE` sobre `id_directorio`. |
-| RI-02 | Un colaborador no tiene dos asignaciones vigentes del mismo perfil. | Índice único filtrado `WHERE fecha_fin IS NULL`. |
-| RI-03 | Quien resuelve una solicitud de acceso o una excepción no es quien la creó. | Restricciones `CHECK` y validación en la API. |
-| RI-04 | Una excepción siempre tiene fecha de término, posterior a su inicio. | `CHECK` y `NOT NULL`. |
-| RI-05 | Un colaborador no tiene a la vez una concesión y un retiro vigentes del mismo permiso. | Validación en el dominio antes de aprobar. |
-| RI-06 | La bitácora no se modifica ni se borra. | Tabla *ledger append-only* de SQL Server 2022; si la versión corporativa no la soporta, `DENY UPDATE, DELETE` y un *trigger* que rechaza ambas operaciones. |
-| RI-07 | Ningún cambio de permisos existe sin su evento de auditoría. | El cambio y el evento se escriben en la misma transacción. |
-| RI-08 | Un perfil, permiso o aplicación en uso no se borra. | Claves foráneas sin borrado en cascada; los registros se desactivan. |
-| RI-09 | Ninguna contraseña ni enlace se guarda en forma legible. | Solo existen columnas de *hash*; revisión del modelo en cada *pull request*. |
-| RI-10 | Dos operaciones no modifican al mismo colaborador o perfil al mismo tiempo. | Bloqueo de fila al inicio de la transacción y verificación de `fila_version` (sección 4). |
+| RI-01 | No existe un usuario sin identidad de AD, ni dos con la misma. | `id` de `usuario` es su código de AD y es la clave primaria. |
+| RI-02 | Un usuario no tiene más de un perfil vigente. | Ya no es una restricción que validar: `usuario.id_perfil` es una columna, no una tabla de asignaciones; estructuralmente no admite un segundo valor. |
+| RI-03 | Quien aprueba una excepción o una solicitud de acceso no es quien la creó. | `CHECK` en `permiso_adiciona.aprobado_por` ≠ `creado_por` (columna agregada); `CHECK` ya presente en el origen para `solicitud_acceso.aprobado_por` ≠ `id_usuario`. |
+| RI-04 | Una excepción siempre tiene fecha de término, posterior a su inicio. | `CHECK` y `NOT NULL` sobre `permiso_adiciona.fecha_termino` (columna agregada). |
+| RI-05 | Un usuario no tiene a la vez una concesión y un retiro vigentes del mismo permiso. | Validación en el dominio antes de aprobar una excepción nueva. |
+| RI-06 | La bitácora no se modifica ni se borra. | Tabla *ledger append-only* de SQL Server 2022; si la versión corporativa no la soporta, `DENY UPDATE, DELETE` y un *trigger* que rechaza ambas operaciones sobre `auditoria`. |
+| RI-07 | Ningún cambio de permisos existe sin su evento de auditoría. | El cambio (en `perfil_sistema_transaccion` o `permiso_adiciona`) y el evento en `auditoria` se escriben en la misma transacción. |
+| RI-08 | Un perfil, sistema o transacción en uso no se borra. | Claves foráneas sin borrado en cascada; los registros se desactivan con su columna `estado`. |
+| RI-09 | Ninguna contraseña se guarda en forma legible. | Solo se escribe el *hash* en `usuario.password_hash`; pendiente confirmar con el cliente qué guarda hoy esa columna en producción (ver «Brechas Pendientes»). |
+| RI-10 | Dos operaciones no modifican al mismo usuario o perfil al mismo tiempo. | Bloqueo de fila al inicio de la transacción y verificación de `rowversion`, tanto en `usuario` (ya la trae el origen) como en `perfil` (columna agregada). |
 
 Fuente: Elaboración propia (2026).
 
 ## Reglas de Negocio: Propagación y Clonación
 
-Esta subsección responde a los compromisos C-02 y C-06. Ambas reglas se apoyan en la misma definición:
+Esta subsección responde a los compromisos C-02 y C-06, reformulados para el esquema de origen: como un usuario tiene un solo perfil (sin versiones), el administrador **elige el alcance de cada cambio** entre dos vías, no entre versiones.
 
-> Permisos efectivos de un colaborador = (permisos de la versión asignada de cada uno de sus perfiles vigentes) + (concesiones aprobadas y vigentes) − (retiros aprobados y vigentes). Si el colaborador está `DESACTIVADO`, sus permisos efectivos son vacíos.
+> Permisos efectivos de un usuario = (permisos de su perfil vigente, vía `perfil_sistema_transaccion`) + (concesiones vigentes en `permiso_adiciona`) − (retiros vigentes en `permiso_adiciona`). Si el usuario está inactivo, sus permisos efectivos son vacíos.
 
-**Regla de propagación al modificar la plantilla de un perfil (C-02, CAL-02).** Fue acordada con el cliente:
+**Regla de propagación al modificar un perfil (C-02, CAL-02), con las dos vías que pidió el cliente:**
 
-1. **Cada cambio crea una versión nueva del perfil.** Las versiones anteriores no se modifican.
-2. **El administrador elige a quién aplicarla:** a todos los colaboradores que tienen el perfil, o solo a los que seleccione. Los no seleccionados siguen en la versión anterior y la pantalla los muestra como desactualizados, para actualizarlos después si corresponde. Las asignaciones nuevas siempre reciben la última versión.
-3. **Se aplica en una sola transacción.** Si falla para uno, no se aplica a ninguno. Esto corrige un hallazgo del legado, que guardaba permiso por permiso sin transacción.
-4. **Nadie pierde un permiso que tiene por otra vía.** Si un permiso quitado también viene de otro perfil o de una concesión vigente, el colaborador lo conserva.
-5. **Las excepciones sobreviven al cambio.** Una concesión sigue vigente aunque su permiso entre después a la plantilla, y la pantalla la marca como redundante.
-6. **Se registra quién fue afectado.** La bitácora guarda un evento por colaborador afectado, con la versión anterior y la nueva, agrupados por el mismo `id_operacion`.
+1. **A todos los colaboradores del perfil.** El cambio se escribe en `perfil_sistema_transaccion`: es inmediato para todos los que tienen ese perfil hoy, y para cualquiera que lo reciba después. Se registra en `perfil_transaccion_cambio`, con una fila en `perfil_transaccion_cambio_usuario` por cada colaborador que tenía el perfil en ese momento.
+2. **Solo a los colaboradores seleccionados.** El perfil **no cambia**: se crea una excepción (`permiso_adiciona`) por cada colaborador elegido — `asignado = true` si se agrega la transacción, `false` si se retira. Los demás colaboradores del mismo perfil, y quien lo reciba después, no se ven afectados. En la práctica, esta vía es una pantalla de conveniencia para crear varias excepciones iguales de una vez, en lugar de una por una desde «Excepciones».
+3. **Ambas vías se aplican en una sola transacción.** Si el cambio incluye a varios colaboradores (por plantilla o por excepción), falla para todos o se aplica a todos.
+4. **Se registra quién fue afectado**, por cualquiera de las dos vías: `perfil_transaccion_cambio_usuario` para la vía 1, el propio `permiso_adiciona.creado_por`/`fecha_creacion` para la vía 2, y un evento en `auditoria` en ambos casos.
+
+La diferencia con el diseño de la EVA 1 es que ya no existe una «versión del perfil» que unos reciban y otros no: aplicar **a todos** cambia la definición compartida del perfil (y alcanza también a quien lo reciba más adelante); aplicar **a algunos** nunca toca esa definición — solo agrega excepciones puntuales a los colaboradores elegidos. El cliente pidió modelar sobre el esquema real, y ese esquema no versiona los perfiles; esta es la forma de ofrecer la misma elección («a todos o solo a algunos») sin inventar una tabla de versiones que el origen no tiene.
 
 **Definición operativa de la clonación (C-06, CAL-03):**
 
-1. **Qué se copia:** los **perfiles vigentes** del usuario de referencia que el administrador seleccione, **en la misma versión** que tiene la referencia. Así el destino queda exactamente igual, que es lo que pide la jefatura: «para Abraham, los mismos permisos que para Pablo». No se copia la lista plana de permisos, porque se perdería el vínculo con el perfil y la propagación dejaría de funcionar.
-2. **Qué no se copia:** las **excepciones**. Son individuales y fueron aprobadas para otra persona; si el destino necesita una, se solicita como excepción nueva.
-3. **Si la referencia cambia después:** no afecta al destino. La clonación es una copia en un momento dado.
-4. **Qué se registra:** un evento `CLONACION` con referencia, destino, perfiles y versiones copiados, perfiles previos del destino, motivo y ticket.
+1. **Qué se copia:** el **perfil vigente** del usuario de referencia que el administrador seleccione. Como cada usuario tiene un solo perfil, clonar es tan simple como asignar el mismo `id_perfil` al destino — es lo que pide la jefatura: «para Abraham, los mismos permisos que para Pablo».
+2. **Qué no se copia:** las **excepciones** (`permiso_adiciona`). Son individuales y fueron aprobadas para otra persona; si el destino necesita una, se solicita como excepción nueva.
+3. **Si la referencia cambia después:** no afecta al destino, porque cada uno tiene su propia fila en `usuario.id_perfil`.
+4. **Qué se registra:** un evento `CAMBIO_PERFIL` en `auditoria`, con referencia, destino, perfil anterior y nuevo del destino, motivo y ticket.
 
-**Ciclo de vida del colaborador (CAL-08).** Replica el proceso actual del cliente:
+**Ciclo de vida del usuario (CAL-08).** Replica el proceso actual del cliente:
 
-- **Alta de la identidad:** la sincronización crea el colaborador cuando aparece en la lista de activos del directorio. No tiene cuenta ni permisos hasta que se aprueba su solicitud de acceso.
-- **Activación de la cuenta:** solicitud → aprobación por un administrador distinto del creador → enlace → definición de la contraseña.
-- **Baja automática:** si el colaborador deja de aparecer en la lista de activos, la siguiente sincronización (máximo 10 minutos) lo desactiva: su cuenta queda `DESACTIVADA` y sus permisos efectivos, vacíos. Como en la empresa los despidos se tratan con reserva y TI de soporte suele no saberlo antes, la baja no depende de que alguien la informe.
-- **Freno de seguridad:** si la lista trae más de un 5 % menos de activos que la ejecución anterior, se supone un error del directorio, no se desactiva a nadie y se avisa a TI.
-- **Baja manual (HU10):** TI puede desactivar a un colaborador antes de que el directorio lo refleje. El registro no se elimina, para conservar la trazabilidad.
+- **Alta de la identidad:** la sincronización (`importacion_ad`) crea el `usuario` cuando aparece en la lista de activos del directorio, sin `id_perfil` ni `password_hash`.
+- **Activación de la cuenta:** `solicitud_acceso` → aprobación por alguien distinto del solicitante → `link_activacion` → definición de la contraseña → se asigna `id_perfil`.
+- **Baja automática:** si el usuario deja de aparecer en la lista de activos, la siguiente sincronización (máximo 10 minutos) lo desactiva (`estado = false`); sus permisos efectivos quedan vacíos porque la condición `usuario.estado` se evalúa en cada cálculo.
+- **Freno de seguridad:** si `importacion_ad` recibe una lista con más de un 5 % menos de activos que la corrida anterior, el resultado queda `FRENO_ACTIVADO`, no se desactiva a nadie y se avisa a TI.
+- **Baja manual (HU10):** TI puede desactivar a un usuario antes de que el directorio lo refleje, cambiando `estado` directamente.
 
-## Coexistencia con el Modelo Legado
+## Mejoras sobre el Esquema de Origen
 
-El cliente lo resumió así: «la pregunta sigue siendo la misma, la respuesta sigue siendo la misma». La coexistencia cumple RF-08 y RNF-05 sin modificar a los satélites:
+El cliente pidió modelar sobre el esquema real **con mejoras**. La siguiente tabla resume, tabla por tabla, qué trae el origen tal cual y qué agrega este diseño:
 
-| Elemento legado | Tratamiento |
-| --- | --- |
-| `tb_sistema`, `tb_perfil`, `tb_transaccion`, `tb_perfil_transaccion` | Se mantienen como catálogo; el modelo nuevo los referencia. `tb_sistema` es el catálogo de aplicaciones que mantiene HU19. |
-| `tb_usuario` | Se mantiene como identidad legada. Su columna `dg_password` (cifrado reversible) **deja de usarse y se vacía**; antes debe confirmarse con el cliente que ningún satélite autentique contra ella (riesgo R-12). |
-| `tb_usuario_sistema_perfil` y `tb_usuario_sistema` | Dejan de ser la fuente de verdad. Los procedimientos que los consultan se reescriben como **fachadas** que leen `rbac.permiso_efectivo`, con los mismos nombres, parámetros y columnas. Si algún satélite lee estas tablas directamente, se reemplazan por vistas con el mismo nombre. |
-| `tb_usuario_ad_staging` y su procedimiento de importación | Se reemplazan por la sincronización cada 10 minutos. |
-| `tb_bloqueo_registro` (bloqueo pesimista) | Se reemplaza por el bloqueo de fila dentro de la transacción y la verificación de versión. |
-| `tb_auditoria` | Se conserva como historial de solo lectura. |
+| Tabla del origen | Mejora que agrega el diseño | Para qué requerimiento |
+| --- | --- | --- |
+| `usuario` | Columnas `bloqueada_hasta` y `sello_seguridad`. | Bloqueo tras 5 intentos fallidos y revocar sesiones al cambiar la contraseña (N-11, RNF-10). |
+| `perfil` | Columna `rowversion`. | Que dos administradores no editen la misma plantilla a la vez sin detectarlo (RI-10). |
+| `permiso_adiciona` | Columnas `estado`, `aprobado_por` y `fecha_termino`. | Flujo de aprobación, separación de funciones y vigencia obligatoria de las excepciones (N-05, N-09, RI-03, RI-04). |
+| `solicitud_acceso` | Columna `creado_por`. | Que el aprobador sea distinto de quien creó la solicitud, no solo del solicitante (CB-02). |
+| — | Motor de permisos y proyección en memoria (sección 4), con caché en Redis (sección 8). | El esquema de origen no trae una tabla de permisos ya calculados; sin ella, cada consulta de un satélite tendría que unir `perfil_sistema_transaccion` y `permiso_adiciona` en el momento. El motor la recalcula solo cuando algo cambia (N-04, RNF-01). |
+| — | Tablas `campana_recertificacion` y `decision_recertificacion`. | El origen no trae un mecanismo de recertificación periódica; estas tablas nuevas, vinculadas a `usuario` y a `departamento`, sostienen HU06 y HU11 tal como se describen en la sección 2. |
 
-Fuente: Elaboración propia a partir del análisis del sistema MSC.Security (2026).
+Fuente: Elaboración propia (2026).
 
-**Carga inicial sin cambios visibles.** En la migración, cada permiso vigente de `tb_usuario_sistema_perfil` se carga como permiso de origen `MIGRADO`, con fecha de término igual a la primera recertificación. El día del cambio la proyección es idéntica a lo que los satélites ven hoy, y la prueba de regresión debe mostrar **cero diferencias**. Después, TI asigna perfiles de forma progresiva y retira los permisos migrados que quedan cubiertos.
+**`campana_recertificacion`** y **`decision_recertificacion`** (agregadas, para HU06 y HU11): una campaña pertenece a un `departamento` y está `ABIERTA` o `CERRADA`; cada decisión registra, para un `usuario` y un permiso (perfil o excepción), si se confirma o se revoca, quién decidió y cuándo. No reemplazan nada del esquema de origen: se apoyan en él (referencian `usuario.id` y `departamento.id`) de la misma forma en que `campana_recertificacion`/`decision_recertificacion` se apoyaban en `rbac.colaborador` en el diseño de la EVA 1.
+
+## Brechas Pendientes de Confirmar con el Cliente
+
+El esquema de origen resuelve casi todo el modelo, pero quedan puntos que no se pueden cerrar sin información que solo el cliente tiene:
+
+- **Naturaleza real de `usuario.password_hash`.** Hay que confirmar si hoy guarda un *hash* seguro o una contraseña reversible, igual que el riesgo R-12 ya documentado para `tb_usuario.dg_password` en el sistema legado. Mientras no se confirme, el diseño asume que debe reescribirse con PBKDF2 al migrar.
+- **Si algún satélite autentica directamente contra `usuario.password_hash`.** De ser así, vaciarla o rehashearla rompería esa aplicación (mismo riesgo R-12).
+- **Adjuntos de las excepciones (HU03).** La pantalla de excepciones permite adjuntar un archivo de respaldo de hasta 5 MB, pero ni `permiso_adiciona` ni ninguna otra tabla del origen tienen una columna para esto. Falta definir con el cliente dónde se guarda (¿una tabla nueva, un *blob storage* externo?) antes de implementarlo.
+
+Fuente: Elaboración propia (2026).

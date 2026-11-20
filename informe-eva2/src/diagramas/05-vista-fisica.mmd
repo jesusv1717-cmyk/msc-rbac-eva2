@@ -29,7 +29,6 @@ flowchart TB
 
     Edge -- "HTTPS 443" --> ARR
     ARR --> GRANJA
-    ARR ~~~ SAT
+    SAT -- "REST + clave de aplicación" --> ARR
     GRANJA -- "cifrado · cuenta gMSA" --> DATOS
     GRANJA -. "correo y AD" .-> EXT
-    SAT -- "SPs legados" --> SQL

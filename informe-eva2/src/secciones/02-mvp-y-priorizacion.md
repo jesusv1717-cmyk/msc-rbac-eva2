@@ -8,7 +8,7 @@ mapeo con los identificadores provisionales del equipo (RF-N, RNF-N); «Won't ha
 
 El MVP se formula en una frase:
 
-> Un portal web con credenciales propias en el que TI aprueba accesos, asigna perfiles en vez de permisos sueltos, compara y copia los perfiles de un colaborador a otro en una sola pantalla y gestiona excepciones aprobadas por otro administrador, mientras cada colaborador consulta sus propios permisos, con cada cambio registrado en una bitácora inmutable y servido a las aplicaciones satélites sin romper los procedimientos legados.
+> Un portal web con credenciales propias en el que TI aprueba accesos, asigna perfiles en vez de permisos sueltos, compara y copia los perfiles de un colaborador a otro en una sola pantalla y gestiona excepciones aprobadas por otro administrador, mientras cada colaborador consulta sus propios permisos, con cada cambio registrado en una bitácora inmutable y servido a las aplicaciones satélites mediante un endpoint REST, en reemplazo de los procedimientos y vistas legados.
 
 El MVP corresponde a lo que se construye y prueba para la EVA 3. Cubre todas las necesidades salvo N-03 (catálogo de departamentos) y la parte de revisión periódica de N-08, que se diseñan completas en este informe pero se construyen en el incremento siguiente (EVA 4). Ningún elemento del alcance aprobado se elimina: solo se ordena su construcción.
 
@@ -54,14 +54,14 @@ Las épicas de la EVA 1 se dividen: la plantilla del perfil pasa de HU01 a HU07,
 | HU18 | Como usuario que olvidó su contraseña, quiero restablecerla con un enlace seguro, para recuperar el acceso. | RF-17 | N-11 | Must | 1 |
 | HU12 | Como Administrador TI, quiero que las identidades se sincronicen solas con el directorio cada 10 minutos, para que quien sale de la empresa pierda el acceso sin intervención manual. | RF-12 | N-08 | Must | 1 |
 | HU07 | Como Administrador TI, quiero definir los permisos que incluye cada perfil y elegir a quién aplicar sus cambios, para no asignar aplicación por aplicación. | RF-01 | N-01 | Must | 2 |
-| HU01 | Como Administrador TI, quiero asignar uno o más perfiles a un colaborador, para otorgar sus permisos en una sola operación. | RF-02 | N-01 | Must | 2 |
+| HU01 | Como Administrador TI, quiero asignar un perfil a un colaborador, para otorgar sus permisos en una sola operación. | RF-02 | N-01 | Must | 2 |
 | HU02 | Como Administrador TI, quiero comparar los permisos de dos usuarios en una sola vista, para ver diferencias sin la doble ventana. | RF-03 | N-02 | Must | 2 |
 | HU08 | Como Administrador TI, quiero clonar los permisos de un usuario de referencia registrando el motivo, para replicar un permiso en un paso. | RF-03, RF-06 | N-02, N-06 | Must | 2 |
 | HU03 | Como Administrador TI, quiero solicitar un permiso fuera del perfil con justificación, ticket y fecha de término, para atender casos especiales. | RF-04 | N-05 | Must | 2 |
 | HU09 | Como Administrador TI, quiero aprobar o rechazar las excepciones solicitadas por otro administrador, para que nadie conceda privilegios por sí solo. | RF-11 | N-09 | Must | 2 |
 | HU10 | Como Administrador TI, quiero dar de baja o cambiar de perfil a un colaborador, para no dejar permisos residuales. | RF-09 | N-08 | Must | 2 |
 | HU14 | Como colaborador, quiero ver mis aplicaciones y permisos, para saber a qué tengo acceso. | RF-14 | N-10 | Must | 3 |
-| HU05 | Como equipo de las aplicaciones satélites, quiero consultar los permisos efectivos de un usuario con baja latencia, para autorizar en tiempo real sin cambiar nuestras aplicaciones. | RF-05, RF-08 | N-04, N-07 | Must | 3 |
+| HU05 | Como equipo de las aplicaciones satélites, quiero consultar los permisos efectivos de un usuario con baja latencia, para autorizar en tiempo real consumiendo el nuevo endpoint. | RF-05, RF-08 | N-04, N-07 | Must | 3 |
 | HU04 | Como Administrador TI, quiero consultar y filtrar la bitácora en solo lectura, para reconstruir la trazabilidad ante una auditoría o incidente. | RF-06 | N-06 | Must | 4 |
 | HU19 | Como Administrador TI, quiero mantener el catálogo de aplicaciones, para registrar las que se incorporan o se retiran. | RF-18 | N-01 | Should | 3 |
 | HU06 | Como Administrador TI, quiero mantener el catálogo de departamentos, para organizar los perfiles sin depender del directorio. | RF-07 | N-03 | Should | EVA 4 |
@@ -75,10 +75,10 @@ Los criterios de aceptación de las historias originales se mantienen. Los de la
 - **HU15 y HU16:** (1) solo puede solicitar acceso una identidad activa en el directorio; (2) quien creó la solicitud no puede aprobarla; (3) al aprobar se crea la cuenta, se asigna el perfil inicial y se envía el enlace, todo en una operación.
 - **HU17 y HU18:** (1) el enlace es de un solo uso y vence a los 15 minutos; (2) si vence y el acceso ya estaba aprobado, se puede reenviar sin una nueva aprobación; (3) al definir la contraseña se invalidan los enlaces anteriores y se cierran las sesiones abiertas; (4) la recuperación responde lo mismo exista o no la cuenta.
 - **HU12:** (1) quien desaparece de la lista de activos queda desactivado, sin permisos efectivos, en un máximo de 10 minutos; (2) cada baja automática queda en la bitácora como realizada por el proceso; (3) si la lista trae más de un 5 % menos de activos que la ejecución anterior, no se desactiva a nadie y se avisa a TI.
-- **HU07:** (1) un cambio en la plantilla crea una nueva versión del perfil; (2) el administrador elige aplicarla a todos o solo a algunos colaboradores, y el cambio se guarda en una sola transacción; (3) los colaboradores no seleccionados siguen en la versión anterior y quedan señalados como desactualizados.
-- **HU08:** (1) se copian los perfiles seleccionados, en la misma versión que tiene el usuario de referencia; (2) la confirmación exige motivo y ticket; (3) la bitácora registra referencia, destino y lo copiado.
+- **HU07:** (1) el administrador elige aplicar el cambio a todos los colaboradores del perfil o solo a los que seleccione, en una sola transacción; (2) «a todos» cambia la plantilla (`perfil_sistema_transaccion`) y queda un registro por cada colaborador afectado; (3) «a algunos» no toca la plantilla: crea una excepción por cada colaborador elegido, sin afectar al resto ni a quien reciba el perfil después.
+- **HU08:** (1) se copia el perfil vigente del usuario de referencia al destino; (2) la confirmación exige motivo y ticket; (3) la bitácora registra referencia, destino, perfil anterior y nuevo.
 - **HU09:** (1) la excepción no se aplica antes de ser aprobada; (2) el solicitante no puede aprobarla; (3) el rechazo exige motivo.
-- **HU10:** (1) la baja revoca perfiles y excepciones en una transacción; (2) el cambio de perfil mantiene sin interrupción los permisos compartidos; (3) queda en la bitácora con su ticket.
+- **HU10:** (1) la baja revoca el perfil y las excepciones del colaborador en una transacción; (2) el cambio de perfil reemplaza al anterior de forma directa, sin un estado intermedio con ambos vigentes; (3) queda en la bitácora con su ticket.
 - **HU14:** (1) el colaborador ve solo sus propios permisos, aunque manipule la solicitud a la API; (2) no hay ninguna acción de modificación; (3) desde la misma pantalla puede pedir el cambio de contraseña.
 
 ## Qué Queda Fuera del MVP y Por Qué
@@ -96,7 +96,8 @@ Los siguientes elementos se clasifican como *Won't Have* en este proyecto:
 | W-01 | Integración bidireccional automática con RRHH | Excede el plazo; las salidas se detectan por la sincronización con el directorio (HU12). |
 | W-02 | Solicitudes de permisos por parte de los colaboradores | Los colaboradores solo solicitan acceso al portal y consultan; los permisos los gestiona TI. |
 | W-03 | Interfaz para dispositivos móviles | El personal trabaja en estaciones fijas dentro de Citrix. |
-| W-04 | Modificar el código de las 37 aplicaciones satélites | Riesgo operativo inaceptable; la coexistencia se resuelve con RF-08. |
 | W-05 | Inicio de sesión con la cuenta corporativa de Microsoft (Entra ID) | Decisión del cliente: registrar la aplicación en Entra ID agrega una complejidad que no se justifica. |
 
 Fuente: Elaboración propia a partir de la EVA 1 y de la entrevista del 14-11-2026 (2026).
+
+La modificación del código de las 37 aplicaciones satélites para consumir el endpoint ya no se clasifica como *Won't Have*: es un punto en conversación con el cliente (Anexo B), no una exclusión cerrada.

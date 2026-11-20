@@ -1,6 +1,6 @@
 # Bloque 3 · Arquitectura e Infraestructura
 
-**Diapositivas 6, 7 y 8 · Informe, secciones 4 y 5 · Criterio 2.1.2 (15 pts, el de mayor puntaje del informe).**
+**Diapositivas 6 a 10 · Informe, secciones 4 y 5 · Criterio 2.1.2 (15 pts, el de mayor puntaje del informe).**
 
 ## Qué Dominar
 
@@ -33,10 +33,10 @@ No. El legado bloqueaba el registro mientras alguien tenía la pantalla abierta,
 El balanceador envía las solicitudes al otro y la sesión sigue válida, porque las llaves de sesión se comparten entre servidores. Una operación que estaba a medias se revierte completa.
 
 **¿Qué pasa si Redis se cae?**
-La aplicación espera como máximo 50 ms, lee desde SQL Server y responde igual, solo más lento, y avisa a TI. Las aplicaciones que usan los procedimientos de siempre ni se enteran.
+La aplicación espera como máximo 50 ms, lee desde SQL Server y responde igual, solo más lento, y avisa a TI. Las aplicaciones reciben la misma respuesta, sin errores.
 
-**¿Por qué el endpoint para las aplicaciones es opcional?**
-Porque modificar las 37 aplicaciones está fuera del alcance. Los procedimientos de siempre siguen funcionando con la misma respuesta, y el endpoint queda disponible para quien quiera usarlo (D-08).
+**¿Por qué las aplicaciones consultan un endpoint y no la base de datos?**
+Porque así una sola pieza resuelve los permisos, con caché, y la base deja de recibir las consultas de las 37 aplicaciones. Se eliminan los procedimientos y vistas legados (D-06 y D-08). Cada aplicación tiene que migrar al endpoint, y eso se está conversando con el cliente aplicación por aplicación (riesgo R-15).
 
 **¿Por qué React y no Blazor, si el cliente exige C# y .NET?**
 La exigencia se cumple en el backend y la base de datos. Blazor Server mantiene una conexión permanente por usuario, sensible a las reconexiones de Citrix, y Blazor WebAssembly descarga todo el entorno al navegador, lo que consume memoria en cada sesión (D-02).

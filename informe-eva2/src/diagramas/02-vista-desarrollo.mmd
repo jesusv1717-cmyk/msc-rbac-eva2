@@ -8,7 +8,7 @@ flowchart TB
     Api["Msc.Rbac.Api<br/>FastEndpoints: Features/&lt;Modulo&gt;/&lt;Operacion&gt;<br/>Endpoint + Request + Response + Validator"]:::red
     Dom["Msc.Rbac.Domain<br/>entidades y reglas: permisos efectivos,<br/>propagación, clonación, separación de funciones"]:::red
     Inf["Msc.Rbac.Infrastructure<br/>EF Core (SQL Server) · ASP.NET Core Identity<br/>StackExchange.Redis · cliente AD · correo SMTP"]:::red
-    Db["database/<br/>migraciones · procedimientos fachada<br/>permisos de la bitácora"]:::dark
+    Db["database/<br/>migraciones · retiro de SPs y vistas legados<br/>permisos de la bitácora"]:::dark
     Tst["tests/<br/>unitarias (xUnit) · integración (Testcontainers)<br/>regresión de SPs · extremo a extremo · carga (k6)"]:::green
 
     Web -- "contrato OpenAPI" --> Api

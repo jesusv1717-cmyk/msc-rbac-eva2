@@ -10,7 +10,7 @@ La solución usa un único almacén no relacional: **Redis**, una base de datos 
 
 Redis guarda **un documento por colaborador** con sus permisos efectivos ya resueltos, listo para entregarse a una aplicación satélite. No guarda contraseñas, datos personales más allá del usuario y el nombre, ni información de auditoría.
 
-Redis **no es fuente de verdad**. Todo lo que contiene se puede reconstruir desde `rbac.permiso_efectivo` en SQL Server. Si Redis se vacía o se cae, no se pierde ningún dato: solo aumenta la latencia mientras la caché se vuelve a llenar.
+Redis **no es fuente de verdad**. Todo lo que contiene se puede reconstruir desde `permiso_efectivo` en SQL Server. Si Redis se vacía o se cae, no se pierde ningún dato: solo aumenta la latencia mientras la caché se vuelve a llenar.
 
 ## Estructura de Claves y Valores
 
@@ -18,8 +18,8 @@ El diseño usa dos tipos de clave:
 
 | Clave | Tipo de valor | Contenido | Expiración |
 | --- | --- | --- | --- |
-| `permisos:usuario:{dc_usuario}` | Cadena con un documento JSON | Permisos efectivos del colaborador, agrupados por sistema. | TTL de 10 minutos. |
-| `permisos:version:{dc_usuario}` | Número entero | Versión de los permisos del colaborador. Aumenta con cada cambio confirmado en SQL Server. | Sin expiración. |
+| `permisos:usuario:{id_usuario}` | Cadena con un documento JSON | Permisos efectivos del colaborador, agrupados por sistema. | TTL de 10 minutos. |
+| `permisos:version:{id_usuario}` | Número entero | Versión de los permisos del colaborador. Aumenta con cada cambio confirmado en SQL Server. | Sin expiración. |
 
 Fuente: Elaboración propia (2026).
 
@@ -76,7 +76,7 @@ Fuente: Elaboración propia (2026).
 
 **Si Redis no está disponible**, se aplica el modo degradado de las secciones 4 y 5: la API espera como máximo 50 ms, responde desde la proyección en SQL Server y emite una alerta. Cuando Redis vuelve, las claves se llenan otra vez a medida que llegan las consultas.
 
-**Relación con el resto de la solución.** Redis solo lo usa la consulta para satélites. Los procedimientos fachada que usan los satélites legados leen la proyección en SQL Server, porque un procedimiento almacenado no puede consultar Redis. Esto corrige una imprecisión de la presentación de la EVA 1, donde se dijo que los procedimientos leerían de Redis.
+**Relación con el resto de la solución.** Redis solo lo usa la consulta para satélites. Todas las aplicaciones satélites consultan los permisos a través del endpoint REST, que sí puede leer de Redis. Esto corrige una imprecisión de la presentación de la EVA 1, donde se dijo que los procedimientos legados leerían de Redis: en este diseño no existen procedimientos legados que consulten permisos.
 
 **Qué no hace Redis.** El docente propuso usar Redis como cola FIFO para ordenar las modificaciones concurrentes. El diseño la evalúa y prefiere el bloqueo de fila en SQL Server (decisión D-09), de modo que Redis mantiene un único propósito: la caché de lectura. Así, una caída de Redis nunca impide modificar permisos.
 

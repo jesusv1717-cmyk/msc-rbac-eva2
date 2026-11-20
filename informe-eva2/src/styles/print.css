@@ -298,10 +298,12 @@ figure img.img-compacta {
 	max-height: 15cm;
 }
 
-/* En tablas, el código largo (rutas, nombres de archivo) puede partirse para no desbordar */
+/* En tablas, el código largo (rutas, nombres de archivo) puede partirse para no desbordar.
+   break-word (no anywhere): solo parte cuando no cabe, así una columna de nombres cortos no
+   se reduce a lo mínimo y los nombres largos no se parten letra por letra sin necesidad. */
 td code,
 th code {
-	overflow-wrap: anywhere;
+	overflow-wrap: break-word;
 }
 
 figure img.img-h16 {

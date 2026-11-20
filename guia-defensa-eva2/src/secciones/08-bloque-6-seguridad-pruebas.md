@@ -1,6 +1,6 @@
 # Bloque 6 · Seguridad, Pruebas y Trazabilidad
 
-**Diapositivas 13, 14 y 15 · Informe, secciones 9, 10 y 11 · Criterios 2.1.5 y 2.1.6 (7 pts cada uno) y calidad del informe (6 pts).**
+**Diapositivas 16, 17 y 18 · Informe, secciones 9, 10 y 11 · Criterios 2.1.5 y 2.1.6 (7 pts cada uno) y calidad del informe (6 pts).**
 
 ## Qué Dominar
 

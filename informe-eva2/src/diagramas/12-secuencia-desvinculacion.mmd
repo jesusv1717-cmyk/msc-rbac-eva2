@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant T as Tarea de sincronización
+    participant DB as SQL Server
+    participant AD as API de AD
+    participant R as Redis
+    participant TI as Equipo de TI
+
+    Note over T: Cada 10 minutos
+    T->>DB: sp_getapplock (bloqueo de aplicación)
+    alt Otro servidor ya tiene el bloqueo
+        DB-->>T: No concedido
+        Note over T: Omite la ejecución
+    else Bloqueo concedido
+        DB-->>T: Concedido
+        T->>AD: Solicita la lista de activos
+        AD-->>T: Lista de activos
+        T->>DB: Compara con las identidades registradas
+        alt Lista normal
+            T->>DB: Altas, bajas y permisos efectivos vacíos
+            T->>DB: Evento de auditoría (misma transacción)
+            DB-->>T: Commit
+            T->>R: Invalida la caché de cada baja
+            Note over T,R: Sin permisos en máximo 10 minutos
+        else Más de 5 % menos de activos o lista vacía (freno)
+            T->>DB: Registra ejecución frenada, sin bajas
+            T-)TI: Aviso de lista anómala
+        end
+        T->>DB: Libera el bloqueo
+    end

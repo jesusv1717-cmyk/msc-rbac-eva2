@@ -15,7 +15,7 @@ Las pruebas se organizan en cinco niveles, todos en el ambiente local con datos 
 | --- | --- | --- |
 | Unitarias | Reglas del dominio (permisos efectivos, propagación, clonación, separación de funciones, política de contraseñas) y validadores. | xUnit |
 | Integración | *Endpoints* contra SQL Server, Redis y el correo de prueba reales en contenedores: transacciones, auditoría, enlaces e invalidación de caché. | xUnit con Testcontainers |
-| Regresión de procedimientos | Que cada procedimiento fachada devuelva las mismas columnas, tipos y valores que el legado. | Scripts de comparación |
+| Regresión de migración | Que el endpoint entregue los mismos permisos que el modelo legado al momento del corte. | Scripts de comparación |
 | Extremo a extremo | Los flujos de la sección 6 en el navegador a 1366 × 768, con dos instancias de la API detrás de un proxy para simular la granja IIS. | Playwright con Microsoft Edge |
 | Rendimiento | El escenario de medición del P95 (subsección 10.5). | k6 |
 
@@ -36,20 +36,20 @@ Fuente: Elaboración propia (2026).
 | CP-05 | RF-12 | `nuevo01` aparece en la API de AD. | Ejecutar la sincronización. | Colaborador creado, sin cuenta ni permisos; ejecución registrada. |
 | CP-06 | RF-12 (CAL-08) | `lrojas` está activo, con permisos. | Quitarlo de la API de AD y esperar la siguiente sincronización. | En 10 minutos o menos: cuenta `DESACTIVADA`, 0 permisos efectivos, el endpoint no devuelve permisos, evento `BAJA_AUTOMATICA` del proceso y la baja aparece en el resumen diario. |
 | CP-07 | RF-02 | Colaborador activo; el perfil tiene 2 permisos. | Asignar el perfil. | 2 filas con origen `PERFIL`; el endpoint devuelve los 2 permisos; evento `ASIGNAR_PERFIL`; respuesta en menos de 2 s. |
-| CP-08 | RF-03 (C-06) | `mgarcia` tiene Facturador (versión 2) y Operador, y una excepción CONSULTA; `lrojas` tiene Operador. | Clonar Facturador de `mgarcia` a `lrojas`, con ticket y motivo. | `lrojas` tiene Facturador en la **versión 2**, **sin** la excepción; evento `CLONACION` con referencia, destino, perfiles y versiones. |
-| CP-09 | RF-03 (C-06) | CP-08. | Quitar Facturador a `mgarcia`. | `lrojas` conserva Facturador. |
-| CP-10 | RF-01 (C-02) | El perfil X (versión 3) lo tienen 3 colaboradores. | Agregar el permiso EMISOR y aplicar a **todos**. | Los 3 en versión 4 con EMISOR; una sola transacción; 3 eventos con el mismo `id_operacion`; sus claves de Redis invalidadas. |
-| CP-11 | RF-01 (C-02) | X (versión 3) lo tienen A, B y C; A tiene además una concesión del permiso P, que está en X. | Quitar P de la plantilla y aplicar **solo a A y B**. | A y B en versión 4; C sigue en versión 3 con P y aparece como desactualizado; A conserva P por la excepción; B pierde P. |
+| CP-08 | RF-03 (C-06) | `mgarcia` tiene el perfil Facturador y una excepción CONSULTA; `lrojas` tiene el perfil Operador. | Clonar el perfil de `mgarcia` a `lrojas`, con ticket y motivo. | `lrojas` queda con el perfil Facturador, **sin** la excepción; evento `CAMBIO_PERFIL` con referencia, destino, perfil anterior y nuevo. |
+| CP-09 | RF-03 (C-06) | CP-08. | Cambiar el perfil de `mgarcia` a otro distinto. | `lrojas` conserva Facturador, porque cada uno tiene su propia fila en `usuario.id_perfil`. |
+| CP-10 | RF-01 (C-02) | El perfil X lo tienen los colaboradores A, B y C. | Agregar el permiso EMISOR a la plantilla X. | Los 3 obtienen EMISOR de inmediato, en una sola transacción; queda un registro en `perfil_transaccion_cambio` con los 3 afectados en `perfil_transaccion_cambio_usuario`; sus claves de Redis invalidadas. |
+| CP-11 | RF-01 (C-02) | El perfil X lo tienen los colaboradores A, B y C; P no está en X. | Agregar el permiso EMISOR, con alcance «solo a A y B». | A y B obtienen EMISOR por una excepción cada uno (`permiso_adiciona`, `asignado = true`); C no cambia; `perfil_sistema_transaccion` de X queda igual que antes. |
 | CP-12 | RF-04, RF-11 | `ctorres` y `rsalas` son administradores. | `ctorres` solicita una concesión para `lrojas`; se consulta el endpoint; `rsalas` aprueba; se consulta otra vez. | Antes de aprobar, el permiso no aparece; después aparece con origen `EXCEPCION`. |
 | CP-13 | RF-11 | Excepción aprobada con término ayer. | Ejecutar la tarea de vencimiento. | Estado `VENCIDA`; el permiso ya no aparece. |
-| CP-14 | RF-09 | Colaborador con perfiles X e Y; X e Y comparten el permiso P. | Cambiar de X a Z (Z incluye P); luego dar de baja con ticket. | P se mantiene sin interrupción en el cambio; tras la baja, 0 permisos y asignaciones cerradas, no borradas. |
-| CP-15 | RF-14 | `lrojas` tiene 2 perfiles y 1 excepción. | Ingresar como `lrojas` y abrir «Mis permisos». | Se listan sus 3 permisos con su origen y vencimiento; no hay botones de modificación. |
-| CP-16 | RF-08, RNF-05 | Carga inicial `MIGRADO` sobre la base demo. | Ejecutar cada procedimiento legado y su fachada con los mismos parámetros. | **Cero diferencias** en columnas, tipos y valores. |
+| CP-14 | RF-09 | Colaborador con perfil X y una excepción vigente que concede el permiso P (P no está en X). | Cambiar su perfil de X a Y (Y sí incluye P); luego darlo de baja con ticket. | Al cambiar de perfil, P se mantiene sin interrupción (lo sigue dando la excepción, luego el perfil nuevo); la excepción queda redundante pero no se borra. Tras la baja: 0 permisos efectivos; perfil y excepción quedan cerrados, no borrados. |
+| CP-15 | RF-14 | `lrojas` tiene 1 perfil y 1 excepción. | Ingresar como `lrojas` y abrir «Mis permisos». | Se listan los permisos de su perfil y de su excepción, cada uno con su origen y vencimiento; no hay botones de modificación. |
+| CP-16 | RF-08, RNF-05 | Mismos usuarios en el sistema legado y en el modelo nuevo (`perfil_sistema_transaccion` + `permiso_adiciona`). | Ejecutar la misma consulta contra la aplicación VB.NET actual y contra el endpoint REST, con los mismos parámetros. | **Cero diferencias** en los permisos efectivos devueltos por ambos caminos. |
 | CP-17 | RF-05 | La clave del usuario no está en Redis. | Consultar dos veces el endpoint. | Respuestas idénticas; la primera es un fallo de caché y la segunda, un acierto. |
 | CP-18 | RF-06 | Eventos de varios operadores y fechas. | Filtrar por afectado y rango de fechas. | Solo los eventos que cumplen ambos filtros; detalle con estado anterior y posterior. |
 | CP-19 | RF-17 | `lrojas` tiene cuenta activa. | «¿Olvidó su contraseña?» con `lrojas`, usar el enlace y definir una contraseña nueva. | Llega un enlace; la nueva contraseña funciona y la anterior no. |
 | CP-20 | RF-18 | Ninguna. | Crear la aplicación «Bodega Demo» y darla de baja. | Aparece en el catálogo y luego queda inactiva, sin borrarse. |
-| CP-21 | RF-07 | Ninguna. | Crear el departamento «Logística» y asignarle un perfil. | El perfil referencia al departamento. |
+| CP-21 | RF-07 | Ninguna. | Crear el departamento «Logística» y asignarlo a un colaborador. | El colaborador queda con `id_departamento` apuntando a Logística. |
 | CP-22 | RF-10 | Campaña abierta para Operaciones. | Confirmar 2 accesos, revocar 1 y cerrar. | El revocado desaparece del endpoint; la campaña cerrada no acepta decisiones. |
 | CP-23 | RNF-06 | Edge a 1366 × 768. | Recorrer los flujos de clonación y excepción solo con teclado. | Todo se completa sin desplazamiento horizontal ni mouse. |
 
@@ -69,7 +69,7 @@ Verifican que el sistema rechaza lo que debe y que **nada cambia** cuando rechaz
 | CP-29 | RF-04 | Ninguna. | Solicitar una excepción de 200 días. | ERR-11. |
 | CP-30 | RF-04 | Archivo de 6 MB. | Adjuntarlo. | ERR-10; el archivo no se guarda. |
 | CP-31 | RF-12 | 100 colaboradores activos. | La API de AD devuelve solo 40 activos. | El freno se activa: nadie se desactiva, se registra la ejecución como frenada y se avisa a TI. |
-| CP-32 | RNF-04 (RI-07) | Se simula una falla al insertar el evento de auditoría. | Asignar un perfil. | La transacción se revierte: no existe la asignación ni el evento. |
+| CP-32 | RNF-04 (RI-07) | Se simula una falla al insertar el evento de auditoría. | Cambiar el perfil de un colaborador. | La transacción se revierte: `usuario.id_perfil` no cambia y no existe el evento. |
 | CP-33 | RNF-10 | Enlace de activación vigente para `jperez`. | Definir como contraseña `jperez2026`, luego `Juan.Perez` y luego `123456789012`. | ERR-16 en los tres casos. |
 | CP-50 | RNF-08 (CB-06) | Dos instancias de la API detrás del proxy; un administrador con sesión iniciada. | Detener la instancia que atiende al administrador mientras guarda una clonación; luego repetir la operación. | La sesión sigue válida en la otra instancia; la primera clonación no quedó aplicada a medias y la segunda se aplica completa. |
 | CP-51 | RF-15 (CB-07) | El servidor de correo de prueba está detenido. | Aprobar una solicitud de acceso y, luego, iniciar el servidor de correo. | La aprobación queda confirmada; el envío figura como pendiente y el enlace llega después del reintento. |
